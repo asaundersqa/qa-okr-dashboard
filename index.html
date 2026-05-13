@@ -155,11 +155,11 @@ const exportPdfBtn = document.getElementById('exportPdfBtn');
 async function fetchCSVData() {
     try {
         const response = await fetch('manual_prs.csv');
-        // Initial setup for blank data
+        
+        // Safety re-initialization
         allTeamsList.forEach(t => dashboardData[t] = { bugTriage: 0, manualPRs: 0, shiftLeft: 0, qaTools: 0 });
 
         if (!response.ok) {
-            console.warn("manual_prs.csv not found yet. Showing blank dashboard.");
             refresh();
             return;
         }
@@ -167,8 +167,9 @@ async function fetchCSVData() {
         const text = await response.text();
         const rows = text.split('\n').filter(r => r.trim() !== '');
         
+        // Map data specifically to CSV V2 format: Week, Team, Tested by QA, Total PRs
         const rawData = rows.slice(1).map(row => {
-            const cols = row.split(',');
+            const cols = row.split(',').map(c => c.trim());
             return {
                 week: cols[0],
                 team: cols[1],
@@ -192,7 +193,7 @@ async function fetchCSVData() {
 
         refresh();
     } catch (e) {
-        console.error("CSV Load Error:", e);
+        console.error("CSV Parsing Error:", e);
         refresh();
     }
 }
