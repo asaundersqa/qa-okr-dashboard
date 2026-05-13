@@ -137,7 +137,7 @@ Object.entries(groupsData).forEach(([g, ts]) => ts.forEach(t => teamToGroup[t] =
 const kpis = [
   { key: 'bugTriage', name: 'Bug Triage', unit: 'h', goal: 72, type: 'lower', agg: 'avg', desc: 'Avg time to triage' },
   { key: 'manualPRs', name: 'Manual PRs', unit: '%', goal: 20, type: 'lower', agg: 'avg', desc: 'Manually tested PRs' },
-  { key: 'shiftLeft', name: 'Shift Left', unit: '', goal: 100, type: 'higher', agg: 'sum', desc: 'Running Total (All Data)' },
+  { key: 'shiftLeft', name: 'Shift Left', unit: '', goal: 100, type: 'higher', agg: 'sum', desc: 'Total items in period' },
   { key: 'qaTools', name: 'QA Tools', unit: '', goal: 14, type: 'higher', agg: 'sum', desc: 'Total Adoptions' }
 ];
 
@@ -226,8 +226,11 @@ async function fetchCSVData() {
         }
         if (resSh.ok) {
             const rows = (await resSh.text()).split('\n').filter(r => r.trim() !== '');
-            // We only need to count total rows for Shift Left
-            rawShiftData = rows.slice(1); 
+            rawShiftData = rows.slice(1).map(r => {
+                const c = r.split(',').map(v => v.trim());
+                const [m, d, y] = c[1].split('/');
+                return { date: new Date(y, m - 1, d) };
+            });
         }
         refresh();
     } catch (e) { console.error(e); }
@@ -254,9 +257,11 @@ function refresh() {
         if (trRows.length > 0) dashboardData[team].bugTriage = trRows.reduce((s, r) => s + r.hours, 0) / trRows.length;
     });
 
-    // FIXED LOGIC: Shift Left is a Running Total (Total Rows - 1)
-    // It does NOT care about the weeksToLookBack filter.
-    const shiftLeftValue = rawShiftData.length; // Length is already rows - header
+    // REVERTED LOGIC: Shift Left counts based on timeframe
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - (weeksToLookBack * 7));
+    const periodShiftLogs = rawShiftData.filter(item => item.date >= cutoff).length;
+    const shiftLeftValue = periodShiftLogs > 0 ? periodShiftLogs - 1 : 0;
 
     // Update UI
     document.getElementById('scopeBadge').innerText = `${selectedGroups.length ? selectedGroups.join(', ') : 'All Groups'} · ${selectedTeams.length ? selectedTeams.length + ' Teams' : 'All Teams'}`;
@@ -280,16 +285,22 @@ function renderKPIs(teams, shiftLeftVal) {
     const pct = progressPct(kpi, val);
     const onTrack = status === 'on';
     
+    // Check if this KPI needs a progress bar (Bug Triage and Manual PRs only)
+    const showProgressBar = kpi.key === 'bugTriage' || kpi.key === 'manualPRs';
+
     grid.innerHTML += `
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <div class="flex justify-between items-start mb-4">
           <p class="text-xs font-semibold uppercase text-slate-500">${kpi.name}</p>
           <span class="inline-flex px-2 py-1 rounded-full ${onTrack ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'} text-xs border border-current/20">${onTrack ? 'On Track' : 'At Risk'}</span>
         </div>
-        <p class="text-4xl font-bold text-white mb-4">${formatValue(kpi, val)}</p>
-        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-          <div class="progress-bar h-full ${onTrack ? 'bg-cyan-500' : 'bg-amber-500'} rounded-full" style="width: ${pct}%"></div>
-        </div>
+        <p class="text-4xl font-bold text-white ${showProgressBar ? 'mb-4' : ''}">${formatValue(kpi, val)}</p>
+        ${showProgressBar ? `
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div class="progress-bar h-full ${onTrack ? 'bg-cyan-500' : 'bg-amber-500'} rounded-full" style="width: ${pct}%"></div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">${pct.toFixed(0)}% of target</p>
+        ` : ''}
       </div>`;
   });
 }
@@ -299,7 +310,7 @@ function renderTable(teams) {
   document.getElementById('tableHeader').innerHTML = `<th class="py-3 px-2">Team</th><th class="py-3 px-2">Group</th><th class="py-3 px-2 text-center">Bug Triage</th><th class="py-3 px-2 text-center">Manual PRs</th>${!isAnyFilterActive ? '<th class="py-3 px-2 text-center">Shift Left</th><th class="py-3 px-2 text-center">QA Tools</th>' : ''}`;
   document.getElementById('teamTable').innerHTML = teams.map(t => {
     const d = dashboardData[t];
-    const cell = (kpi, val) => `<td class="py-3 px-2 ${statusFor(kpi, val) === 'on' ? 'text-emerald-400' : 'text-amber-400'} text-center">${formatValue(kpi, val)}</td>`;
+    const cell = (kpi, val) => `<td class="py-3 px-2 ${statusFor(kpi, val) === 'on' ? 'text-emerald-400' : 'text-amber-400'} text-center font-medium">${formatValue(kpi, val)}</td>`;
     return `<tr class="border-b border-slate-800/50 hover:bg-slate-800/30"><td class="py-3 px-2 text-white">${t}</td><td class="py-3 px-2 text-slate-400 text-xs">${teamToGroup[t] || 'N/A'}</td>${cell(kpis[0], d.bugTriage)}${cell(kpis[1], d.manualPRs)}${!isAnyFilterActive ? '<td class="text-center text-slate-600">--</td><td class="text-center text-slate-600">--</td>' : ''}</tr>`;
   }).join('');
 }
