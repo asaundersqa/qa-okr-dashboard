@@ -141,7 +141,42 @@ const kpis = [
   { key: 'qaTools', name: 'QA Tools WAU', unit: '', goal: 24, type: 'higher', agg: 'avg', desc: 'Avg Weekly Active Users' }
 ];
 
-// --- MULTI-SELECT ---
+// --- URL SHARING LOGIC ---
+function updateURL() {
+  const params = new URLSearchParams();
+  params.set('period', document.getElementById('periodSelect').value);
+  if (selectedGroups.length) params.set('groups', selectedGroups.join(','));
+  if (selectedTeams.length) params.set('teams', selectedTeams.join(','));
+  
+  const newURL = `${window.location.pathname}?${params.toString()}`;
+  window.history.replaceState({}, '', newURL);
+}
+
+function loadFiltersFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  
+  const period = params.get('period');
+  if (period) document.getElementById('periodSelect').value = period;
+
+  const groups = params.get('groups');
+  if (groups) selectedGroups = groups.split(',');
+
+  const teams = params.get('teams');
+  if (teams) selectedTeams = teams.split(',');
+
+  // Check the boxes visually
+  document.querySelectorAll('#groupOptions input').forEach(i => {
+    if (selectedGroups.includes(i.value)) i.checked = true;
+  });
+  updateTeamOptions(); // Re-render team list based on group selection
+  document.querySelectorAll('#teamOptions input').forEach(i => {
+    if (selectedTeams.includes(i.value)) i.checked = true;
+  });
+  
+  updateButtonText();
+}
+
+// --- DROPDOWNS ---
 function initMultiSelect(btnId, dropdownId, optionsId, isGroup = true) {
   const btn = document.getElementById(btnId);
   const dropdown = document.getElementById(dropdownId);
@@ -171,6 +206,7 @@ function initMultiSelect(btnId, dropdownId, optionsId, isGroup = true) {
         selectedTeams = Array.from(optionsDiv.querySelectorAll('input:checked')).map(i => i.value);
       }
       updateButtonText();
+      updateURL();
       refresh();
     };
   });
@@ -189,6 +225,7 @@ function updateTeamOptions() {
     input.onchange = () => {
       selectedTeams = Array.from(teamOptionsDiv.querySelectorAll('input:checked')).map(i => i.value);
       updateButtonText();
+      updateURL();
       refresh();
     };
   });
@@ -201,7 +238,7 @@ function updateButtonText() {
 
 window.onclick = () => document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
 
-// --- DATA ---
+// --- FETCH ---
 async function fetchCSVData() {
     try {
         const [resPR, resTr, resSh, resQA] = await Promise.all([
@@ -245,7 +282,6 @@ function refresh() {
     const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - (weeksToLookBack * 7));
     const shiftVal = rawShiftData.filter(i => i.date >= cutoff).length;
     
-    // QA WAU Average Logic:
     const qaRowsInPeriod = rawQAData.filter(d => targetWeeks.includes(d.week));
     const qaVal = qaRowsInPeriod.length > 0 ? (qaRowsInPeriod.reduce((s,i)=>s+i.visits, 0) / qaRowsInPeriod.length) : 0;
 
@@ -310,9 +346,18 @@ function statusFor(kpi, value) { return kpi.type === 'lower' ? (value <= kpi.goa
 function progressPct(kpi, value) { if (kpi.type === 'lower') return value === 0 ? 100 : Math.max(0, Math.min(100, (kpi.goal / value) * 100)); return Math.max(0, Math.min(100, (value / kpi.goal) * 100)); }
 function formatValue(kpi, value) { return `${Number.isInteger(value) ? value : value.toFixed(1)}${kpi.unit}`; }
 
+// --- INIT ---
 initMultiSelect('groupBtn', 'groupDropdown', 'groupOptions', true);
 initMultiSelect('teamBtn', 'teamDropdown', 'teamOptions', false);
-document.getElementById('periodSelect').onchange = fetchCSVData;
+
+// Time period URL update
+document.getElementById('periodSelect').onchange = () => {
+  updateURL();
+  fetchCSVData();
+};
+
+// Initial load
+loadFiltersFromURL();
 fetchCSVData();
 
 exportPdfBtn.addEventListener('click', () => {
