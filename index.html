@@ -325,7 +325,14 @@ function updateCharts(activeTeams, targetWeeks) {
 function aggregate(teams, kpi) { const sum = teams.reduce((acc, t) => acc + (dashboardData[t] ? dashboardData[t][kpi.key] : 0), 0); return kpi.agg === 'sum' ? sum : (teams.length ? sum / teams.length : 0); }
 function statusFor(kpi, value) { return kpi.type === 'lower' ? (value <= kpi.goal ? 'on' : 'risk') : (value >= kpi.goal ? 'on' : 'risk'); }
 function progressPct(kpi, value) { if (kpi.type === 'lower') return value === 0 ? 100 : Math.max(0, Math.min(100, (kpi.goal / value) * 100)); return Math.max(0, Math.min(100, (value / kpi.goal) * 100)); }
-function formatValue(kpi, value) { return `${Number.isInteger(value) ? value : value.toFixed(1)}${kpi.unit}`; }
+function formatValue(kpi, value) {
+  // If the metric is Cycle Time (unit 'd'), always show 1 decimal point
+  if (kpi.unit === 'd') {
+    return `${value.toFixed(1)}${kpi.unit}`;
+  }
+  // For other metrics, show decimals only if the number isn't a whole integer
+  return `${Number.isInteger(value) ? value : value.toFixed(1)}${kpi.unit}`;
+}
 
 // --- INIT ---
 initMultiSelect('groupBtn', 'groupDropdown', 'groupOptions', true);
