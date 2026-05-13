@@ -89,11 +89,11 @@
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10" id="kpiGrid"></div>
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-10">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 transition-all hover:border-slate-700">
         <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-6">Bug Triage Average (Hours)</h3>
         <div class="h-64 w-full"><canvas id="triageChart"></canvas></div>
       </div>
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 transition-all hover:border-slate-700">
         <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-6">Manual PR Testing (%)</h3>
         <div class="h-64 w-full"><canvas id="manualChart"></canvas></div>
       </div>
@@ -154,7 +154,6 @@ function updateURL() {
 
 function loadFiltersFromURL() {
   const params = new URLSearchParams(window.location.search);
-  
   const period = params.get('period');
   if (period) document.getElementById('periodSelect').value = period;
 
@@ -164,15 +163,13 @@ function loadFiltersFromURL() {
   const teams = params.get('teams');
   if (teams) selectedTeams = teams.split(',');
 
-  // Check the boxes visually
   document.querySelectorAll('#groupOptions input').forEach(i => {
     if (selectedGroups.includes(i.value)) i.checked = true;
   });
-  updateTeamOptions(); // Re-render team list based on group selection
+  updateTeamOptions();
   document.querySelectorAll('#teamOptions input').forEach(i => {
     if (selectedTeams.includes(i.value)) i.checked = true;
   });
-  
   updateButtonText();
 }
 
@@ -285,7 +282,20 @@ function refresh() {
     const qaRowsInPeriod = rawQAData.filter(d => targetWeeks.includes(d.week));
     const qaVal = qaRowsInPeriod.length > 0 ? (qaRowsInPeriod.reduce((s,i)=>s+i.visits, 0) / qaRowsInPeriod.length) : 0;
 
+    // --- SMART BADGE LOGIC ---
+    const formatSelection = (arr, allLabel) => {
+        if (arr.length === 0) return allLabel;
+        if (arr.length <= 3) return arr.join(', ');
+        return `${arr.slice(0, 2).join(', ')} + ${arr.length - 2} more`;
+    };
+
+    const groupPart = formatSelection(selectedGroups, "All Groups");
+    const teamPart = formatSelection(selectedTeams, "All Teams");
+    const periodLabel = document.getElementById('periodSelect').options[document.getElementById('periodSelect').selectedIndex].text;
+    
+    document.getElementById('scopeBadge').innerText = `${groupPart} · ${teamPart} · ${periodLabel}`;
     document.getElementById('teamCount').innerText = `${activeTeams.length} Teams`;
+    
     renderKPIs(activeTeams, (shiftVal>0?shiftVal-1:0), qaVal); 
     renderTable(activeTeams); 
     updateCharts(activeTeams, targetWeeks);
@@ -304,7 +314,7 @@ function renderKPIs(teams, shiftVal, qaVal) {
     const hasBar = kpi.key === 'bugTriage' || kpi.key === 'manualPRs';
 
     grid.innerHTML += `
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 transition-all hover:border-slate-700">
         <div class="flex justify-between items-start mb-4">
           <p class="text-xs font-semibold uppercase text-slate-500">${kpi.name}</p>
           <span class="inline-flex px-2 py-1 rounded-full ${onTrack ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'} text-xs border border-current/20">${onTrack ? 'On Track' : 'At Risk'}</span>
@@ -349,14 +359,8 @@ function formatValue(kpi, value) { return `${Number.isInteger(value) ? value : v
 // --- INIT ---
 initMultiSelect('groupBtn', 'groupDropdown', 'groupOptions', true);
 initMultiSelect('teamBtn', 'teamDropdown', 'teamOptions', false);
+document.getElementById('periodSelect').onchange = () => { updateURL(); fetchCSVData(); };
 
-// Time period URL update
-document.getElementById('periodSelect').onchange = () => {
-  updateURL();
-  fetchCSVData();
-};
-
-// Initial load
 loadFiltersFromURL();
 fetchCSVData();
 
