@@ -1,385 +1,385 @@
-Week,Team,Tested by QA,Total PRs,Manual PR %
-2026-W08,DC1,3,10,30.00
-2026-W08,DC2,8,25,32.00
-2026-W08,DC3,6,19,31.58
-2026-W08,AI1,10,31,32.26
-2026-W08,AI2,3,17,17.65
-2026-W08,AI3,4,22,18.18
-2026-W08,AI4,17,36,47.22
-2026-W08,AI5,9,25,36.00
-2026-W08,AI6,1,17,5.88
-2026-W08,Process 1,4,30,13.33
-2026-W08,Process 2,3,14,21.43
-2026-W08,Process 3,11,30,36.67
-2026-W08,Enterprise Architecture,0,13,0.00
-2026-W08,Intelligent Feature Adoption,3,20,15.00
-2026-W08,License Request/Grants,6,31,19.35
-2026-W08,New Enterprise User,3,17,17.65
-2026-W08,Growth,1,13,7.69
-2026-W08,Planning 1,4,35,11.43
-2026-W08,Planning 2,11,25,44.00
-2026-W08,Cloud 1,6,37,16.22
-2026-W08,Cloud 2,8,35,22.86
-2026-W08,Intelligent Interface 1,2,11,18.18
-2026-W08,Intelligent Interface 2,2,12,16.67
-2026-W08,Intelligent Interface 3,17,36,47.22
-2026-W08,Intelligent Interface 4,9,32,28.13
-2026-W08,UFO,2,23,8.70
-2026-W08,Papercuts,10,35,28.57
-2026-W08,Core Support,0,18,0.00
-2026-W08,Change Management,3,12,25.00
-2026-W08,Templates,16,33,48.48
-2026-W08,Accelerator Platform 1,1,29,3.45
-2026-W08,Accelerator Platform 2,6,31,19.35
-2026-W09,DC1,1,21,4.76
-2026-W09,DC2,7,36,19.44
-2026-W09,DC3,2,23,8.70
-2026-W09,AI1,5,10,50.00
-2026-W09,AI2,9,35,25.71
-2026-W09,AI3,12,32,37.50
-2026-W09,AI4,8,26,30.77
-2026-W09,AI5,8,31,25.81
-2026-W09,AI6,12,35,34.29
-2026-W09,Process 1,1,17,5.88
-2026-W09,Process 2,3,11,27.27
-2026-W09,Process 3,0,12,0.00
-2026-W09,Enterprise Architecture,10,39,25.64
-2026-W09,Intelligent Feature Adoption,5,12,41.67
-2026-W09,License Request/Grants,12,39,30.77
-2026-W09,New Enterprise User,1,36,2.78
-2026-W09,Growth,3,22,13.64
-2026-W09,Planning 1,17,39,43.59
-2026-W09,Planning 2,3,10,30.00
-2026-W09,Cloud 1,3,11,27.27
-2026-W09,Cloud 2,3,30,10.00
-2026-W09,Intelligent Interface 1,0,15,0.00
-2026-W09,Intelligent Interface 2,2,27,7.41
-2026-W09,Intelligent Interface 3,2,14,14.29
-2026-W09,Intelligent Interface 4,1,22,4.55
-2026-W09,UFO,5,17,29.41
-2026-W09,Papercuts,5,14,35.71
-2026-W09,Core Support,13,34,38.24
-2026-W09,Change Management,4,40,10.00
-2026-W09,Templates,6,23,26.09
-2026-W09,Accelerator Platform 1,0,34,0.00
-2026-W09,Accelerator Platform 2,10,25,40.00
-2026-W10,DC1,9,27,33.33
-2026-W10,DC2,9,28,32.14
-2026-W10,DC3,4,22,18.18
-2026-W10,AI1,3,11,27.27
-2026-W10,AI2,2,29,6.90
-2026-W10,AI3,2,14,14.29
-2026-W10,AI4,1,16,6.25
-2026-W10,AI5,9,27,33.33
-2026-W10,AI6,0,10,0.00
-2026-W10,Process 1,7,40,17.50
-2026-W10,Process 2,12,25,48.00
-2026-W10,Process 3,6,16,37.50
-2026-W10,Enterprise Architecture,7,19,36.84
-2026-W10,Intelligent Feature Adoption,7,25,28.00
-2026-W10,License Request/Grants,17,40,42.50
-2026-W10,New Enterprise User,9,25,36.00
-2026-W10,Growth,3,21,14.29
-2026-W10,Planning 1,2,28,7.14
-2026-W10,Planning 2,3,19,15.79
-2026-W10,Cloud 1,7,32,21.88
-2026-W10,Cloud 2,16,35,45.71
-2026-W10,Intelligent Interface 1,0,21,0.00
-2026-W10,Intelligent Interface 2,9,21,42.86
-2026-W10,Intelligent Interface 3,3,23,13.04
-2026-W10,Intelligent Interface 4,11,35,31.43
-2026-W10,UFO,2,13,15.38
-2026-W10,Papercuts,1,11,9.09
-2026-W10,Core Support,11,24,45.83
-2026-W10,Change Management,1,14,7.14
-2026-W10,Templates,1,37,2.70
-2026-W10,Accelerator Platform 1,8,16,50.00
-2026-W10,Accelerator Platform 2,10,22,45.45
-2026-W11,DC1,8,32,25.00
-2026-W11,DC2,8,25,32.00
-2026-W11,DC3,1,24,4.17
-2026-W11,AI1,9,30,30.00
-2026-W11,AI2,7,18,38.89
-2026-W11,AI3,15,37,40.54
-2026-W11,AI4,0,33,0.00
-2026-W11,AI5,8,30,26.67
-2026-W11,AI6,2,10,20.00
-2026-W11,Process 1,1,25,4.00
-2026-W11,Process 2,1,39,2.56
-2026-W11,Process 3,3,19,15.79
-2026-W11,Enterprise Architecture,6,29,20.69
-2026-W11,Intelligent Feature Adoption,10,20,50.00
-2026-W11,License Request/Grants,6,24,25.00
-2026-W11,New Enterprise User,2,40,5.00
-2026-W11,Growth,1,10,10.00
-2026-W11,Planning 1,5,36,13.89
-2026-W11,Planning 2,3,31,9.68
-2026-W11,Cloud 1,8,21,38.10
-2026-W11,Cloud 2,4,18,22.22
-2026-W11,Intelligent Interface 1,4,16,25.00
-2026-W11,Intelligent Interface 2,11,32,34.38
-2026-W11,Intelligent Interface 3,12,26,46.15
-2026-W11,Intelligent Interface 4,3,12,25.00
-2026-W11,UFO,0,16,0.00
-2026-W11,Papercuts,4,19,21.05
-2026-W11,Core Support,1,11,9.09
-2026-W11,Change Management,18,39,46.15
-2026-W11,Templates,11,31,35.48
-2026-W11,Accelerator Platform 1,4,24,16.67
-2026-W11,Accelerator Platform 2,0,11,0.00
-2026-W12,DC1,0,29,0.00
-2026-W12,DC2,1,10,10.00
-2026-W12,DC3,2,35,5.71
-2026-W12,AI1,12,36,33.33
-2026-W12,AI2,3,20,15.00
-2026-W12,AI3,4,10,40.00
-2026-W12,AI4,6,17,35.29
-2026-W12,AI5,7,29,24.14
-2026-W12,AI6,8,17,47.06
-2026-W12,Process 1,7,17,41.18
-2026-W12,Process 2,4,13,30.77
-2026-W12,Process 3,15,30,50.00
-2026-W12,Enterprise Architecture,17,40,42.50
-2026-W12,Intelligent Feature Adoption,19,39,48.72
-2026-W12,License Request/Grants,15,30,50.00
-2026-W12,New Enterprise User,15,36,41.67
-2026-W12,Growth,9,18,50.00
-2026-W12,Planning 1,3,25,12.00
-2026-W12,Planning 2,16,35,45.71
-2026-W12,Cloud 1,6,16,37.50
-2026-W12,Cloud 2,5,31,16.13
-2026-W12,Intelligent Interface 1,7,38,18.42
-2026-W12,Intelligent Interface 2,1,33,3.03
-2026-W12,Intelligent Interface 3,1,31,3.23
-2026-W12,Intelligent Interface 4,8,17,47.06
-2026-W12,UFO,5,15,33.33
-2026-W12,Papercuts,1,23,4.35
-2026-W12,Core Support,2,23,8.70
-2026-W12,Change Management,7,28,25.00
-2026-W12,Templates,1,12,8.33
-2026-W12,Accelerator Platform 1,2,29,6.90
-2026-W12,Accelerator Platform 2,11,32,34.38
-2026-W13,DC1,2,13,15.38
-2026-W13,DC2,7,38,18.42
-2026-W13,DC3,4,12,33.33
-2026-W13,AI1,2,17,11.76
-2026-W13,AI2,15,36,41.67
-2026-W13,AI3,6,35,17.14
-2026-W13,AI4,11,29,37.93
-2026-W13,AI5,3,23,13.04
-2026-W13,AI6,15,39,38.46
-2026-W13,Process 1,9,34,26.47
-2026-W13,Process 2,9,37,24.32
-2026-W13,Process 3,9,31,29.03
-2026-W13,Enterprise Architecture,3,13,23.08
-2026-W13,Intelligent Feature Adoption,4,22,18.18
-2026-W13,License Request/Grants,13,26,50.00
-2026-W13,New Enterprise User,13,35,37.14
-2026-W13,Growth,10,23,43.48
-2026-W13,Planning 1,10,25,40.00
-2026-W13,Planning 2,9,19,47.37
-2026-W13,Cloud 1,12,24,50.00
-2026-W13,Cloud 2,6,19,31.58
-2026-W13,Intelligent Interface 1,7,17,41.18
-2026-W13,Intelligent Interface 2,6,22,27.27
-2026-W13,Intelligent Interface 3,14,29,48.28
-2026-W13,Intelligent Interface 4,17,35,48.57
-2026-W13,UFO,4,16,25.00
-2026-W13,Papercuts,0,32,0.00
-2026-W13,Core Support,15,31,48.39
-2026-W13,Change Management,10,20,50.00
-2026-W13,Templates,3,15,20.00
-2026-W13,Accelerator Platform 1,2,16,12.50
-2026-W13,Accelerator Platform 2,15,38,39.47
-2026-W14,DC1,3,30,10.00
-2026-W14,DC2,4,22,18.18
-2026-W14,DC3,11,24,45.83
-2026-W14,AI1,9,18,50.00
-2026-W14,AI2,4,17,23.53
-2026-W14,AI3,2,18,11.11
-2026-W14,AI4,4,23,17.39
-2026-W14,AI5,2,10,20.00
-2026-W14,AI6,0,25,0.00
-2026-W14,Process 1,3,18,16.67
-2026-W14,Process 2,18,38,47.37
-2026-W14,Process 3,0,27,0.00
-2026-W14,Enterprise Architecture,4,37,10.81
-2026-W14,Intelligent Feature Adoption,12,27,44.44
-2026-W14,License Request/Grants,1,16,6.25
-2026-W14,New Enterprise User,3,10,30.00
-2026-W14,Growth,14,38,36.84
-2026-W14,Planning 1,0,27,0.00
-2026-W14,Planning 2,2,19,10.53
-2026-W14,Cloud 1,13,28,46.43
-2026-W14,Cloud 2,5,28,17.86
-2026-W14,Intelligent Interface 1,4,12,33.33
-2026-W14,Intelligent Interface 2,6,16,37.50
-2026-W14,Intelligent Interface 3,1,25,4.00
-2026-W14,Intelligent Interface 4,5,11,45.45
-2026-W14,UFO,6,38,15.79
-2026-W14,Papercuts,2,34,5.88
-2026-W14,Core Support,3,21,14.29
-2026-W14,Change Management,0,20,0.00
-2026-W14,Templates,19,38,50.00
-2026-W14,Accelerator Platform 1,14,30,46.67
-2026-W14,Accelerator Platform 2,1,22,4.55
-2026-W15,DC1,9,31,29.03
-2026-W15,DC2,2,32,6.25
-2026-W15,DC3,5,40,12.50
-2026-W15,AI1,2,20,10.00
-2026-W15,AI2,12,37,32.43
-2026-W15,AI3,7,25,28.00
-2026-W15,AI4,8,22,36.36
-2026-W15,AI5,2,35,5.71
-2026-W15,AI6,5,17,29.41
-2026-W15,Process 1,7,30,23.33
-2026-W15,Process 2,0,13,0.00
-2026-W15,Process 3,2,21,9.52
-2026-W15,Enterprise Architecture,9,34,26.47
-2026-W15,Intelligent Feature Adoption,8,27,29.63
-2026-W15,License Request/Grants,4,11,36.36
-2026-W15,New Enterprise User,1,18,5.56
-2026-W15,Growth,11,29,37.93
-2026-W15,Planning 1,5,21,23.81
-2026-W15,Planning 2,4,33,12.12
-2026-W15,Cloud 1,8,38,21.05
-2026-W15,Cloud 2,11,23,47.83
-2026-W15,Intelligent Interface 1,4,21,19.05
-2026-W15,Intelligent Interface 2,3,13,23.08
-2026-W15,Intelligent Interface 3,5,23,21.74
-2026-W15,Intelligent Interface 4,2,13,15.38
-2026-W15,UFO,4,15,26.67
-2026-W15,Papercuts,2,19,10.53
-2026-W15,Core Support,6,36,16.67
-2026-W15,Change Management,6,19,31.58
-2026-W15,Templates,5,21,23.81
-2026-W15,Accelerator Platform 1,3,32,9.38
-2026-W15,Accelerator Platform 2,10,31,32.26
-2026-W16,DC1,13,36,36.11
-2026-W16,DC2,3,10,30.00
-2026-W16,DC3,6,39,15.38
-2026-W16,AI1,2,16,12.50
-2026-W16,AI2,2,18,11.11
-2026-W16,AI3,6,19,31.58
-2026-W16,AI4,0,26,0.00
-2026-W16,AI5,3,18,16.67
-2026-W16,AI6,18,40,45.00
-2026-W16,Process 1,4,19,21.05
-2026-W16,Process 2,1,27,3.70
-2026-W16,Process 3,17,37,45.95
-2026-W16,Enterprise Architecture,1,32,3.13
-2026-W16,Intelligent Feature Adoption,1,40,2.50
-2026-W16,License Request/Grants,11,29,37.93
-2026-W16,New Enterprise User,4,15,26.67
-2026-W16,Growth,15,31,48.39
-2026-W16,Planning 1,4,19,21.05
-2026-W16,Planning 2,2,22,9.09
-2026-W16,Cloud 1,15,38,39.47
-2026-W16,Cloud 2,2,16,12.50
-2026-W16,Intelligent Interface 1,19,40,47.50
-2026-W16,Intelligent Interface 2,8,31,25.81
-2026-W16,Intelligent Interface 3,0,20,0.00
-2026-W16,Intelligent Interface 4,8,31,25.81
-2026-W16,UFO,0,38,0.00
-2026-W16,Papercuts,6,13,46.15
-2026-W16,Core Support,3,28,10.71
-2026-W16,Change Management,0,17,0.00
-2026-W16,Templates,5,35,14.29
-2026-W16,Accelerator Platform 1,17,34,50.00
-2026-W16,Accelerator Platform 2,16,34,47.06
-2026-W17,DC1,5,40,12.50
-2026-W17,DC2,2,12,16.67
-2026-W17,DC3,8,19,42.11
-2026-W17,AI1,9,33,27.27
-2026-W17,AI2,3,12,25.00
-2026-W17,AI3,16,39,41.03
-2026-W17,AI4,0,21,0.00
-2026-W17,AI5,3,38,7.89
-2026-W17,AI6,6,29,20.69
-2026-W17,Process 1,3,19,15.79
-2026-W17,Process 2,1,17,5.88
-2026-W17,Process 3,3,22,13.64
-2026-W17,Enterprise Architecture,1,18,5.56
-2026-W17,Intelligent Feature Adoption,12,26,46.15
-2026-W17,License Request/Grants,2,15,13.33
-2026-W17,New Enterprise User,5,24,20.83
-2026-W17,Growth,6,34,17.65
-2026-W17,Planning 1,5,15,33.33
-2026-W17,Planning 2,8,19,42.11
-2026-W17,Cloud 1,1,15,6.67
-2026-W17,Cloud 2,4,18,22.22
-2026-W17,Intelligent Interface 1,15,32,46.88
-2026-W17,Intelligent Interface 2,7,28,25.00
-2026-W17,Intelligent Interface 3,0,13,0.00
-2026-W17,Intelligent Interface 4,4,36,11.11
-2026-W17,UFO,9,34,26.47
-2026-W17,Papercuts,15,37,40.54
-2026-W17,Core Support,5,13,38.46
-2026-W17,Change Management,5,11,45.45
-2026-W17,Templates,12,39,30.77
-2026-W17,Accelerator Platform 1,0,17,0.00
-2026-W17,Accelerator Platform 2,15,32,46.88
-2026-W18,DC1,35,35,100.00
-2026-W18,DC2,6,31,19.35
-2026-W18,DC3,13,39,33.33
-2026-W18,AI1,15,38,39.47
-2026-W18,AI2,10,36,27.78
-2026-W18,AI3,14,34,41.18
-2026-W18,AI4,1,15,6.67
-2026-W18,AI5,5,34,14.71
-2026-W18,AI6,6,40,15.00
-2026-W18,Process 1,2,28,7.14
-2026-W18,Process 2,0,23,0.00
-2026-W18,Process 3,5,15,33.33
-2026-W18,Enterprise Architecture,13,36,36.11
-2026-W18,Intelligent Feature Adoption,11,27,40.74
-2026-W18,License Request/Grants,7,14,50.00
-2026-W18,New Enterprise User,3,12,25.00
-2026-W18,Growth,4,31,12.90
-2026-W18,Planning 1,16,34,47.06
-2026-W18,Planning 2,6,14,42.86
-2026-W18,Cloud 1,2,16,12.50
-2026-W18,Cloud 2,5,25,20.00
-2026-W18,Intelligent Interface 1,7,36,19.44
-2026-W18,Intelligent Interface 2,9,38,23.68
-2026-W18,Intelligent Interface 3,6,29,20.69
-2026-W18,Intelligent Interface 4,0,10,0.00
-2026-W18,UFO,7,18,38.89
-2026-W18,Papercuts,17,34,50.00
-2026-W18,Core Support,0,17,0.00
-2026-W18,Change Management,10,20,50.00
-2026-W18,Templates,3,13,23.08
-2026-W18,Accelerator Platform 1,9,38,23.68
-2026-W18,Accelerator Platform 2,9,28,32.14
-2026-W19,DC1,22,22,100.00
-2026-W19,DC2,5.6,28,20.00
-2026-W19,DC3,3,18,16.67
-2026-W19,AI1,12,40,30.00
-2026-W19,AI2,0,11,0.00
-2026-W19,AI3,8,34,23.53
-2026-W19,AI4,1,40,2.50
-2026-W19,AI5,6,35,17.14
-2026-W19,AI6,1,32,3.13
-2026-W19,Process 1,6,14,42.86
-2026-W19,Process 2,4,19,21.05
-2026-W19,Process 3,3,40,7.50
-2026-W19,Enterprise Architecture,2,23,8.70
-2026-W19,Intelligent Feature Adoption,1,14,7.14
-2026-W19,License Request/Grants,2,20,10.00
-2026-W19,New Enterprise User,0,30,0.00
-2026-W19,Growth,5,10,50.00
-2026-W19,Planning 1,2,23,8.70
-2026-W19,Planning 2,3,19,15.79
-2026-W19,Cloud 1,0,31,0.00
-2026-W19,Cloud 2,0,10,0.00
-2026-W19,Intelligent Interface 1,3,17,17.65
-2026-W19,Intelligent Interface 2,0,22,0.00
-2026-W19,Intelligent Interface 3,1,18,5.56
-2026-W19,Intelligent Interface 4,9,33,27.27
-2026-W19,UFO,17,35,48.57
-2026-W19,Papercuts,11,34,32.35
-2026-W19,Core Support,10,25,40.00
-2026-W19,Change Management,13,31,41.94
-2026-W19,Templates,4,16,25.00
-2026-W19,Accelerator Platform 1,9,27,33.33
-2026-W19,Accelerator Platform 2,3,13,23.08
+Week,Team,Tested by QA,Total PRs,Manual PR %,CycleTimeHours
+2026-W08,DC1,3,10,30.00,40
+2026-W08,DC2,8,25,32.00,15
+2026-W08,DC3,6,19,31.58,51
+2026-W08,AI1,10,31,32.26,83
+2026-W08,AI2,3,17,17.65,40
+2026-W08,AI3,4,22,18.18,63
+2026-W08,AI4,17,36,47.22,51
+2026-W08,AI5,9,25,36.00,73
+2026-W08,AI6,1,17,5.88,80
+2026-W08,Process 1,4,30,13.33,24
+2026-W08,Process 2,3,14,21.43,31
+2026-W08,Process 3,11,30,36.67,51
+2026-W08,Enterprise Architecture,0,13,0.00,77
+2026-W08,Intelligent Feature Adoption,3,20,15.00,33
+2026-W08,License Request/Grants,6,31,19.35,69
+2026-W08,New Enterprise User,3,17,17.65,50
+2026-W08,Growth,1,13,7.69,32
+2026-W08,Planning 1,4,35,11.43,74
+2026-W08,Planning 2,11,25,44.00,77
+2026-W08,Cloud 1,6,37,16.22,47
+2026-W08,Cloud 2,8,35,22.86,12
+2026-W08,Intelligent Interface 1,2,11,18.18,46
+2026-W08,Intelligent Interface 2,2,12,16.67,66
+2026-W08,Intelligent Interface 3,17,36,47.22,93
+2026-W08,Intelligent Interface 4,9,32,28.13,45
+2026-W08,UFO,2,23,8.70,22
+2026-W08,Papercuts,10,35,28.57,86
+2026-W08,Core Support,0,18,0.00,86
+2026-W08,Change Management,3,12,25.00,25
+2026-W08,Templates,16,33,48.48,50
+2026-W08,Accelerator Platform 1,1,29,3.45,44
+2026-W08,Accelerator Platform 2,6,31,19.35,14
+2026-W09,DC1,1,21,4.76,14
+2026-W09,DC2,7,36,19.44,95
+2026-W09,DC3,2,23,8.70,77
+2026-W09,AI1,5,10,50.00,46
+2026-W09,AI2,9,35,25.71,47
+2026-W09,AI3,12,32,37.50,41
+2026-W09,AI4,8,26,30.77,23
+2026-W09,AI5,8,31,25.81,60
+2026-W09,AI6,12,35,34.29,14
+2026-W09,Process 1,1,17,5.88,74
+2026-W09,Process 2,3,11,27.27,13
+2026-W09,Process 3,0,12,0.00,59
+2026-W09,Enterprise Architecture,10,39,25.64,44
+2026-W09,Intelligent Feature Adoption,5,12,41.67,63
+2026-W09,License Request/Grants,12,39,30.77,68
+2026-W09,New Enterprise User,1,36,2.78,89
+2026-W09,Growth,3,22,13.64,40
+2026-W09,Planning 1,17,39,43.59,32
+2026-W09,Planning 2,3,10,30.00,18
+2026-W09,Cloud 1,3,11,27.27,48
+2026-W09,Cloud 2,3,30,10.00,74
+2026-W09,Intelligent Interface 1,0,15,0.00,75
+2026-W09,Intelligent Interface 2,2,27,7.41,96
+2026-W09,Intelligent Interface 3,2,14,14.29,69
+2026-W09,Intelligent Interface 4,1,22,4.55,87
+2026-W09,UFO,5,17,29.41,71
+2026-W09,Papercuts,5,14,35.71,78
+2026-W09,Core Support,13,34,38.24,51
+2026-W09,Change Management,4,40,10.00,77
+2026-W09,Templates,6,23,26.09,47
+2026-W09,Accelerator Platform 1,0,34,0.00,82
+2026-W09,Accelerator Platform 2,10,25,40.00,77
+2026-W10,DC1,9,27,33.33,86
+2026-W10,DC2,9,28,32.14,64
+2026-W10,DC3,4,22,18.18,28
+2026-W10,AI1,3,11,27.27,62
+2026-W10,AI2,2,29,6.90,96
+2026-W10,AI3,2,14,14.29,53
+2026-W10,AI4,1,16,6.25,59
+2026-W10,AI5,9,27,33.33,78
+2026-W10,AI6,0,10,0.00,68
+2026-W10,Process 1,7,40,17.50,82
+2026-W10,Process 2,12,25,48.00,29
+2026-W10,Process 3,6,16,37.50,40
+2026-W10,Enterprise Architecture,7,19,36.84,62
+2026-W10,Intelligent Feature Adoption,7,25,28.00,52
+2026-W10,License Request/Grants,17,40,42.50,63
+2026-W10,New Enterprise User,9,25,36.00,59
+2026-W10,Growth,3,21,14.29,13
+2026-W10,Planning 1,2,28,7.14,54
+2026-W10,Planning 2,3,19,15.79,80
+2026-W10,Cloud 1,7,32,21.88,92
+2026-W10,Cloud 2,16,35,45.71,69
+2026-W10,Intelligent Interface 1,0,21,0.00,34
+2026-W10,Intelligent Interface 2,9,21,42.86,82
+2026-W10,Intelligent Interface 3,3,23,13.04,12
+2026-W10,Intelligent Interface 4,11,35,31.43,90
+2026-W10,UFO,2,13,15.38,40
+2026-W10,Papercuts,1,11,9.09,18
+2026-W10,Core Support,11,24,45.83,79
+2026-W10,Change Management,1,14,7.14,21
+2026-W10,Templates,1,37,2.70,27
+2026-W10,Accelerator Platform 1,8,16,50.00,22
+2026-W10,Accelerator Platform 2,10,22,45.45,25
+2026-W11,DC1,8,32,25.00,76
+2026-W11,DC2,8,25,32.00,58
+2026-W11,DC3,1,24,4.17,60
+2026-W11,AI1,9,30,30.00,76
+2026-W11,AI2,7,18,38.89,56
+2026-W11,AI3,15,37,40.54,60
+2026-W11,AI4,0,33,0.00,35
+2026-W11,AI5,8,30,26.67,75
+2026-W11,AI6,2,10,20.00,67
+2026-W11,Process 1,1,25,4.00,37
+2026-W11,Process 2,1,39,2.56,80
+2026-W11,Process 3,3,19,15.79,25
+2026-W11,Enterprise Architecture,6,29,20.69,41
+2026-W11,Intelligent Feature Adoption,10,20,50.00,27
+2026-W11,License Request/Grants,6,24,25.00,37
+2026-W11,New Enterprise User,2,40,5.00,42
+2026-W11,Growth,1,10,10.00,30
+2026-W11,Planning 1,5,36,13.89,88
+2026-W11,Planning 2,3,31,9.68,44
+2026-W11,Cloud 1,8,21,38.10,81
+2026-W11,Cloud 2,4,18,22.22,29
+2026-W11,Intelligent Interface 1,4,16,25.00,47
+2026-W11,Intelligent Interface 2,11,32,34.38,74
+2026-W11,Intelligent Interface 3,12,26,46.15,96
+2026-W11,Intelligent Interface 4,3,12,25.00,21
+2026-W11,UFO,0,16,0.00,30
+2026-W11,Papercuts,4,19,21.05,62
+2026-W11,Core Support,1,11,9.09,91
+2026-W11,Change Management,18,39,46.15,41
+2026-W11,Templates,11,31,35.48,65
+2026-W11,Accelerator Platform 1,4,24,16.67,54
+2026-W11,Accelerator Platform 2,0,11,0.00,60
+2026-W12,DC1,0,29,0.00,63
+2026-W12,DC2,1,10,10.00,14
+2026-W12,DC3,2,35,5.71,72
+2026-W12,AI1,12,36,33.33,34
+2026-W12,AI2,3,20,15.00,82
+2026-W12,AI3,4,10,40.00,31
+2026-W12,AI4,6,17,35.29,21
+2026-W12,AI5,7,29,24.14,31
+2026-W12,AI6,8,17,47.06,64
+2026-W12,Process 1,7,17,41.18,65
+2026-W12,Process 2,4,13,30.77,92
+2026-W12,Process 3,15,30,50.00,48
+2026-W12,Enterprise Architecture,17,40,42.50,90
+2026-W12,Intelligent Feature Adoption,19,39,48.72,32
+2026-W12,License Request/Grants,15,30,50.00,81
+2026-W12,New Enterprise User,15,36,41.67,13
+2026-W12,Growth,9,18,50.00,39
+2026-W12,Planning 1,3,25,12.00,69
+2026-W12,Planning 2,16,35,45.71,80
+2026-W12,Cloud 1,6,16,37.50,37
+2026-W12,Cloud 2,5,31,16.13,50
+2026-W12,Intelligent Interface 1,7,38,18.42,78
+2026-W12,Intelligent Interface 2,1,33,3.03,17
+2026-W12,Intelligent Interface 3,1,31,3.23,67
+2026-W12,Intelligent Interface 4,8,17,47.06,56
+2026-W12,UFO,5,15,33.33,17
+2026-W12,Papercuts,1,23,4.35,30
+2026-W12,Core Support,2,23,8.70,37
+2026-W12,Change Management,7,28,25.00,47
+2026-W12,Templates,1,12,8.33,69
+2026-W12,Accelerator Platform 1,2,29,6.90,49
+2026-W12,Accelerator Platform 2,11,32,34.38,72
+2026-W13,DC1,2,13,15.38,13
+2026-W13,DC2,7,38,18.42,24
+2026-W13,DC3,4,12,33.33,36
+2026-W13,AI1,2,17,11.76,55
+2026-W13,AI2,15,36,41.67,23
+2026-W13,AI3,6,35,17.14,34
+2026-W13,AI4,11,29,37.93,77
+2026-W13,AI5,3,23,13.04,37
+2026-W13,AI6,15,39,38.46,93
+2026-W13,Process 1,9,34,26.47,21
+2026-W13,Process 2,9,37,24.32,18
+2026-W13,Process 3,9,31,29.03,17
+2026-W13,Enterprise Architecture,3,13,23.08,58
+2026-W13,Intelligent Feature Adoption,4,22,18.18,19
+2026-W13,License Request/Grants,13,26,50.00,15
+2026-W13,New Enterprise User,13,35,37.14,22
+2026-W13,Growth,10,23,43.48,53
+2026-W13,Planning 1,10,25,40.00,82
+2026-W13,Planning 2,9,19,47.37,91
+2026-W13,Cloud 1,12,24,50.00,91
+2026-W13,Cloud 2,6,19,31.58,69
+2026-W13,Intelligent Interface 1,7,17,41.18,93
+2026-W13,Intelligent Interface 2,6,22,27.27,72
+2026-W13,Intelligent Interface 3,14,29,48.28,75
+2026-W13,Intelligent Interface 4,17,35,48.57,36
+2026-W13,UFO,4,16,25.00,96
+2026-W13,Papercuts,0,32,0.00,17
+2026-W13,Core Support,15,31,48.39,77
+2026-W13,Change Management,10,20,50.00,67
+2026-W13,Templates,3,15,20.00,34
+2026-W13,Accelerator Platform 1,2,16,12.50,20
+2026-W13,Accelerator Platform 2,15,38,39.47,89
+2026-W14,DC1,3,30,10.00,55
+2026-W14,DC2,4,22,18.18,90
+2026-W14,DC3,11,24,45.83,72
+2026-W14,AI1,9,18,50.00,64
+2026-W14,AI2,4,17,23.53,48
+2026-W14,AI3,2,18,11.11,50
+2026-W14,AI4,4,23,17.39,60
+2026-W14,AI5,2,10,20.00,67
+2026-W14,AI6,0,25,0.00,72
+2026-W14,Process 1,3,18,16.67,68
+2026-W14,Process 2,18,38,47.37,40
+2026-W14,Process 3,0,27,0.00,64
+2026-W14,Enterprise Architecture,4,37,10.81,37
+2026-W14,Intelligent Feature Adoption,12,27,44.44,73
+2026-W14,License Request/Grants,1,16,6.25,34
+2026-W14,New Enterprise User,3,10,30.00,37
+2026-W14,Growth,14,38,36.84,95
+2026-W14,Planning 1,0,27,0.00,44
+2026-W14,Planning 2,2,19,10.53,89
+2026-W14,Cloud 1,13,28,46.43,45
+2026-W14,Cloud 2,5,28,17.86,45
+2026-W14,Intelligent Interface 1,4,12,33.33,75
+2026-W14,Intelligent Interface 2,6,16,37.50,40
+2026-W14,Intelligent Interface 3,1,25,4.00,19
+2026-W14,Intelligent Interface 4,5,11,45.45,24
+2026-W14,UFO,6,38,15.79,70
+2026-W14,Papercuts,2,34,5.88,48
+2026-W14,Core Support,3,21,14.29,20
+2026-W14,Change Management,0,20,0.00,61
+2026-W14,Templates,19,38,50.00,19
+2026-W14,Accelerator Platform 1,14,30,46.67,56
+2026-W14,Accelerator Platform 2,1,22,4.55,13
+2026-W15,DC1,9,31,29.03,63
+2026-W15,DC2,2,32,6.25,51
+2026-W15,DC3,5,40,12.50,52
+2026-W15,AI1,2,20,10.00,73
+2026-W15,AI2,12,37,32.43,79
+2026-W15,AI3,7,25,28.00,59
+2026-W15,AI4,8,22,36.36,27
+2026-W15,AI5,2,35,5.71,35
+2026-W15,AI6,5,17,29.41,81
+2026-W15,Process 1,7,30,23.33,47
+2026-W15,Process 2,0,13,0.00,57
+2026-W15,Process 3,2,21,9.52,86
+2026-W15,Enterprise Architecture,9,34,26.47,66
+2026-W15,Intelligent Feature Adoption,8,27,29.63,46
+2026-W15,License Request/Grants,4,11,36.36,66
+2026-W15,New Enterprise User,1,18,5.56,51
+2026-W15,Growth,11,29,37.93,51
+2026-W15,Planning 1,5,21,23.81,48
+2026-W15,Planning 2,4,33,12.12,53
+2026-W15,Cloud 1,8,38,21.05,53
+2026-W15,Cloud 2,11,23,47.83,70
+2026-W15,Intelligent Interface 1,4,21,19.05,35
+2026-W15,Intelligent Interface 2,3,13,23.08,48
+2026-W15,Intelligent Interface 3,5,23,21.74,13
+2026-W15,Intelligent Interface 4,2,13,15.38,84
+2026-W15,UFO,4,15,26.67,47
+2026-W15,Papercuts,2,19,10.53,83
+2026-W15,Core Support,6,36,16.67,91
+2026-W15,Change Management,6,19,31.58,50
+2026-W15,Templates,5,21,23.81,48
+2026-W15,Accelerator Platform 1,3,32,9.38,29
+2026-W15,Accelerator Platform 2,10,31,32.26,31
+2026-W16,DC1,13,36,36.11,52
+2026-W16,DC2,3,10,30.00,45
+2026-W16,DC3,6,39,15.38,85
+2026-W16,AI1,2,16,12.50,19
+2026-W16,AI2,2,18,11.11,95
+2026-W16,AI3,6,19,31.58,20
+2026-W16,AI4,0,26,0.00,80
+2026-W16,AI5,3,18,16.67,23
+2026-W16,AI6,18,40,45.00,15
+2026-W16,Process 1,4,19,21.05,63
+2026-W16,Process 2,1,27,3.70,43
+2026-W16,Process 3,17,37,45.95,63
+2026-W16,Enterprise Architecture,1,32,3.13,23
+2026-W16,Intelligent Feature Adoption,1,40,2.50,81
+2026-W16,License Request/Grants,11,29,37.93,59
+2026-W16,New Enterprise User,4,15,26.67,58
+2026-W16,Growth,15,31,48.39,35
+2026-W16,Planning 1,4,19,21.05,51
+2026-W16,Planning 2,2,22,9.09,27
+2026-W16,Cloud 1,15,38,39.47,49
+2026-W16,Cloud 2,2,16,12.50,18
+2026-W16,Intelligent Interface 1,19,40,47.50,16
+2026-W16,Intelligent Interface 2,8,31,25.81,63
+2026-W16,Intelligent Interface 3,0,20,0.00,64
+2026-W16,Intelligent Interface 4,8,31,25.81,71
+2026-W16,UFO,0,38,0.00,20
+2026-W16,Papercuts,6,13,46.15,85
+2026-W16,Core Support,3,28,10.71,17
+2026-W16,Change Management,0,17,0.00,90
+2026-W16,Templates,5,35,14.29,29
+2026-W16,Accelerator Platform 1,17,34,50.00,60
+2026-W16,Accelerator Platform 2,16,34,47.06,77
+2026-W17,DC1,5,40,12.50,37
+2026-W17,DC2,2,12,16.67,52
+2026-W17,DC3,8,19,42.11,89
+2026-W17,AI1,9,33,27.27,14
+2026-W17,AI2,3,12,25.00,80
+2026-W17,AI3,16,39,41.03,55
+2026-W17,AI4,0,21,0.00,94
+2026-W17,AI5,3,38,7.89,86
+2026-W17,AI6,6,29,20.69,87
+2026-W17,Process 1,3,19,15.79,37
+2026-W17,Process 2,1,17,5.88,25
+2026-W17,Process 3,3,22,13.64,39
+2026-W17,Enterprise Architecture,1,18,5.56,85
+2026-W17,Intelligent Feature Adoption,12,26,46.15,49
+2026-W17,License Request/Grants,2,15,13.33,67
+2026-W17,New Enterprise User,5,24,20.83,22
+2026-W17,Growth,6,34,17.65,31
+2026-W17,Planning 1,5,15,33.33,14
+2026-W17,Planning 2,8,19,42.11,48
+2026-W17,Cloud 1,1,15,6.67,15
+2026-W17,Cloud 2,4,18,22.22,36
+2026-W17,Intelligent Interface 1,15,32,46.88,47
+2026-W17,Intelligent Interface 2,7,28,25.00,48
+2026-W17,Intelligent Interface 3,0,13,0.00,73
+2026-W17,Intelligent Interface 4,4,36,11.11,49
+2026-W17,UFO,9,34,26.47,24
+2026-W17,Papercuts,15,37,40.54,49
+2026-W17,Core Support,5,13,38.46,13
+2026-W17,Change Management,5,11,45.45,94
+2026-W17,Templates,12,39,30.77,38
+2026-W17,Accelerator Platform 1,0,17,0.00,18
+2026-W17,Accelerator Platform 2,15,32,46.88,64
+2026-W18,DC1,35,35,100.00,59
+2026-W18,DC2,6,31,19.35,67
+2026-W18,DC3,13,39,33.33,25
+2026-W18,AI1,15,38,39.47,38
+2026-W18,AI2,10,36,27.78,68
+2026-W18,AI3,14,34,41.18,26
+2026-W18,AI4,1,15,6.67,55
+2026-W18,AI5,5,34,14.71,59
+2026-W18,AI6,6,40,15.00,75
+2026-W18,Process 1,2,28,7.14,72
+2026-W18,Process 2,0,23,0.00,89
+2026-W18,Process 3,5,15,33.33,87
+2026-W18,Enterprise Architecture,13,36,36.11,57
+2026-W18,Intelligent Feature Adoption,11,27,40.74,40
+2026-W18,License Request/Grants,7,14,50.00,37
+2026-W18,New Enterprise User,3,12,25.00,62
+2026-W18,Growth,4,31,12.90,62
+2026-W18,Planning 1,16,34,47.06,48
+2026-W18,Planning 2,6,14,42.86,37
+2026-W18,Cloud 1,2,16,12.50,68
+2026-W18,Cloud 2,5,25,20.00,69
+2026-W18,Intelligent Interface 1,7,36,19.44,78
+2026-W18,Intelligent Interface 2,9,38,23.68,16
+2026-W18,Intelligent Interface 3,6,29,20.69,49
+2026-W18,Intelligent Interface 4,0,10,0.00,84
+2026-W18,UFO,7,18,38.89,79
+2026-W18,Papercuts,17,34,50.00,16
+2026-W18,Core Support,0,17,0.00,74
+2026-W18,Change Management,10,20,50.00,73
+2026-W18,Templates,3,13,23.08,73
+2026-W18,Accelerator Platform 1,9,38,23.68,81
+2026-W18,Accelerator Platform 2,9,28,32.14,54
+2026-W19,DC1,22,22,100.00,74
+2026-W19,DC2,5.6,28,20.00,12
+2026-W19,DC3,3,18,16.67,13
+2026-W19,AI1,12,40,30.00,95
+2026-W19,AI2,0,11,0.00,84
+2026-W19,AI3,8,34,23.53,36
+2026-W19,AI4,1,40,2.50,60
+2026-W19,AI5,6,35,17.14,20
+2026-W19,AI6,1,32,3.13,53
+2026-W19,Process 1,6,14,42.86,67
+2026-W19,Process 2,4,19,21.05,25
+2026-W19,Process 3,3,40,7.50,82
+2026-W19,Enterprise Architecture,2,23,8.70,35
+2026-W19,Intelligent Feature Adoption,1,14,7.14,68
+2026-W19,License Request/Grants,2,20,10.00,94
+2026-W19,New Enterprise User,0,30,0.00,73
+2026-W19,Growth,5,10,50.00,88
+2026-W19,Planning 1,2,23,8.70,81
+2026-W19,Planning 2,3,19,15.79,42
+2026-W19,Cloud 1,0,31,0.00,13
+2026-W19,Cloud 2,0,10,0.00,29
+2026-W19,Intelligent Interface 1,3,17,17.65,50
+2026-W19,Intelligent Interface 2,0,22,0.00,82
+2026-W19,Intelligent Interface 3,1,18,5.56,93
+2026-W19,Intelligent Interface 4,9,33,27.27,23
+2026-W19,UFO,17,35,48.57,31
+2026-W19,Papercuts,11,34,32.35,33
+2026-W19,Core Support,10,25,40.00,20
+2026-W19,Change Management,13,31,41.94,63
+2026-W19,Templates,4,16,25.00,85
+2026-W19,Accelerator Platform 1,9,27,33.33,84
+2026-W19,Accelerator Platform 2,3,13,23.08,85
