@@ -67,7 +67,7 @@
     </div>
 
     <div class="mt-auto pt-6 border-t border-slate-800">
-      <button id="exportPdfBtn" class="w-full mb-4 bg-gradient-to-br from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium text-sm rounded-lg px-3 py-2.5 flex items-center justify-center gap-2">
+      <button id="exportPdfBtn" class="w-full mb-4 bg-gradient-to-br from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium text-sm rounded-lg px-3 py-2.5 flex items-center justify-center gap-2 transition-colors">
         PDF Export
       </button>
       <div class="text-xs text-slate-500">
@@ -144,6 +144,9 @@ function initMultiSelect(btnId, dropdownId, optionsId, data, isGroup = true) {
     document.querySelectorAll('.dropdown-content').forEach(d => { if(d !== dropdown) d.classList.remove('show'); });
     dropdown.classList.toggle('show');
   };
+
+  // Prevent dropdown from closing when clicking inside
+  dropdown.onclick = (e) => e.stopPropagation();
 
   const items = isGroup ? Object.keys(data) : allTeamsList;
   optionsDiv.innerHTML = items.map(item => `
@@ -246,13 +249,14 @@ function formatValue(kpi, value) {
 
 function renderKPIs() {
   const teams = getActiveTeams();
-  // Logic: Hide Shift/QA if exactly 1 group is selected OR any specific teams are selected
-  const isDeepDive = selectedTeams.length > 0 || selectedGroups.length === 1;
+  
+  // LOGIC: ONLY show Shift/QA when literally NOTHING is selected (All Groups AND All Teams)
+  const isAnyFilterActive = selectedTeams.length > 0 || selectedGroups.length > 0;
   
   const grid = document.getElementById('kpiGrid');
   grid.innerHTML = '';
   kpis.forEach(kpi => {
-    if (isDeepDive && (kpi.key === 'shiftLeft' || kpi.key === 'qaTools')) return;
+    if (isAnyFilterActive && (kpi.key === 'shiftLeft' || kpi.key === 'qaTools')) return;
     const val = aggregate(teams, kpi);
     const status = statusFor(kpi, val);
     const pct = progressPct(kpi, val);
@@ -276,14 +280,14 @@ function renderKPIs() {
 
 function renderTable() {
   const teams = getActiveTeams();
-  const isDeepDive = selectedTeams.length > 0 || selectedGroups.length === 1;
+  const isAnyFilterActive = selectedTeams.length > 0 || selectedGroups.length > 0;
   
   document.getElementById('tableHeader').innerHTML = `
     <th class="py-3 px-2 font-medium">Team</th>
     <th class="py-3 px-2 font-medium">Group</th>
     <th class="py-3 px-2 font-medium text-center">Bug Triage</th>
     <th class="py-3 px-2 font-medium text-center">Manual PRs</th>
-    ${!isDeepDive ? '<th class="py-3 px-2 font-medium text-center">Shift Left</th><th class="py-3 px-2 font-medium text-center">QA Tools</th>' : ''}
+    ${!isAnyFilterActive ? '<th class="py-3 px-2 font-medium text-center">Shift Left</th><th class="py-3 px-2 font-medium text-center">QA Tools</th>' : ''}
   `;
 
   document.getElementById('teamTable').innerHTML = teams.map(t => {
@@ -295,7 +299,7 @@ function renderTable() {
         <td class="py-3 px-2 text-slate-400 text-xs">${teamToGroup[t] || 'N/A'}</td>
         ${cell(kpis[0], d.bugTriage)}
         ${cell(kpis[1], d.manualPRs)}
-        ${!isDeepDive ? cell(kpis[2], d.shiftLeft) + cell(kpis[3], d.qaTools) : ''}
+        ${!isAnyFilterActive ? cell(kpis[2], d.shiftLeft) + cell(kpis[3], d.qaTools) : ''}
       </tr>`;
   }).join('');
 }
