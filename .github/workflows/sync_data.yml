@@ -12,18 +12,50 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Fetch Google Sheet as CSV
-        uses: jakejarvis/google-sheets-to-csv@v2.0.1
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          sheet_id: '1x5C-L1rMF94EdWPNZNzPHkxiENil8ZcOywiWAcVYjFQ'
-          output: 'manual_prs.csv'
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+
+      - name: Fetch Google Sheet
         env:
           GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+        run: |
+          python - <<EOF
+          import os
+          import json
+          import google.auth
+          from googleapiclient.discovery import build
+          from google.oauth2 import service_account
+
+          # Load credentials from secret
+          info = json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT_KEY'])
+          creds = service_account.Credentials.from_service_account_info(info)
+          service = build('sheets', 'v4', credentials=creds)
+
+          # Spreadsheet details
+          SPREADSHEET_ID = '1x5C-L1rMF94EdWPNZNzPHkxiENil8ZcOywiWAcVYjFQ'
+          RANGE_NAME = 'Manual_PRs!A:E' # Make sure this matches your tab name!
+
+          # Call the Sheets API
+          sheet = service.spreadsheets()
+          result = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME).execute()
+          values = result.get('values', [])
+
+          # Save to CSV
+          import csv
+          with open('manual_prs.csv', 'w', newline='') as f:
+              writer = csv.writer(f)
+              writer.writerows(values)
+          EOF
 
       - name: Commit and Push
         run: |
           git config --global user.name "DataSyncBot"
           git config --global user.email "actions@github.com"
           git add manual_prs.csv
-          git commit -m "Auto-update data via Service Account" || echo "No changes"
+          git commit -m "Auto-update data via Python & Service Account" || echo "No changes"
           git push
