@@ -38,11 +38,9 @@ jobs:
               creds = service_account.Credentials.from_service_account_info(info)
               service = build('sheets', 'v4', credentials=creds)
 
-              # --- CONFIGURATION: Define Sheet IDs here ---
-              # Manual PRs Sheet ID
+              # --- CONFIGURATION ---
               PR_SHEET_ID = '1x5C-L1rMF94EdWPNZNzPHkxiENil8ZcOywiWAcVYjFQ'
-              # Bug Triage Sheet ID (REPLACE THIS WITH YOUR ACTUAL ID)
-              TRIAGE_SHEET_ID = 'PASTE_YOUR_TRIAGE_SHEET_ID_HERE'
+              TRIAGE_SHEET_ID = '1EhoGAzeLDdD0tCXXtBTUWp1i52cUyuUqrJEpNYueZbM'
 
               # 2. Fetch Manual PRs (First Tab)
               print("Fetching Manual PRs...")
@@ -51,7 +49,6 @@ jobs:
               pr_result = service.spreadsheets().values().get(spreadsheetId=PR_SHEET_ID, range=f"'{pr_tab}'!A:E").execute()
               with open('manual_prs.csv', 'w', newline='') as f:
                   csv.writer(f).writerows(pr_result.get('values', []))
-              print("manual_prs.csv saved.")
 
               # 3. Fetch Bug Triage (First Tab)
               print("Fetching Bug Triage...")
@@ -60,7 +57,8 @@ jobs:
               tr_result = service.spreadsheets().values().get(spreadsheetId=TRIAGE_SHEET_ID, range=f"'{tr_tab}'!A:C").execute()
               with open('bug_triage.csv', 'w', newline='') as f:
                   csv.writer(f).writerows(tr_result.get('values', []))
-              print("bug_triage.csv saved.")
+
+              print("Sync Complete: manual_prs.csv and bug_triage.csv updated.")
 
           except Exception as e:
               print(f"ERROR: {e}")
@@ -72,5 +70,5 @@ jobs:
           git config --global user.name "DataSyncBot"
           git config --global user.email "actions@github.com"
           git add manual_prs.csv bug_triage.csv
-          git commit -m "Auto-sync all CSV data" || echo "No changes"
+          git commit -m "Auto-sync Manual PRs and Bug Triage" || echo "No changes"
           git push
