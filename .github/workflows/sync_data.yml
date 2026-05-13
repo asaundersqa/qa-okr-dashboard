@@ -18,9 +18,9 @@ jobs:
           python-version: '3.x'
 
       - name: Install dependencies
-        run: pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+        run: pip install google-auth google-api-python-client
 
-      - name: Fetch Google Sheet
+      - name: Fetch Data from Google Sheets
         env:
           GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
         run: |
@@ -28,46 +28,49 @@ jobs:
           import os
           import json
           import csv
+          import sys
           from googleapiclient.discovery import build
           from google.oauth2 import service_account
 
           try:
-              # 1. Authenticate
+              # 1. Setup Authentication
               info = json.loads(os.environ['GOOGLE_SERVICE_ACCOUNT_KEY'])
               creds = service_account.Credentials.from_service_account_info(info)
               service = build('sheets', 'v4', credentials=creds)
 
-              SPREADSHEET_ID = '1x5C-L1rMF94EdWPNZNzPHkxiENil8ZcOywiWAcVYjFQ'
+              # --- CONFIGURATION: Define Sheet IDs here ---
+              # Manual PRs Sheet ID
+              PR_SHEET_ID = '1x5C-L1rMF94EdWPNZNzPHkxiENil8ZcOywiWAcVYjFQ'
+              # Bug Triage Sheet ID (REPLACE THIS WITH YOUR ACTUAL ID)
+              TRIAGE_SHEET_ID = 'PASTE_YOUR_TRIAGE_SHEET_ID_HERE'
 
-              # 2. Get the name of the FIRST tab automatically
-              sheet_metadata = service.spreadsheets().get(spreadsheetId=SPREADSHEET_ID).execute()
-              first_sheet_name = sheet_metadata['sheets'][0]['properties']['title']
-              print(f"Loading data from tab: {first_sheet_name}")
-
-              # 3. Pull the data from that tab (Columns A through E)
-              range_name = f"'{first_sheet_name}'!A:E"
-              result = service.spreadsheets().values().get(spreadsheetId=SPREADSHEET_ID, range=range_name).execute()
-              values = result.get('values', [])
-
-              # 4. Save to CSV
-              if not values:
-                  print("No data found.")
-                  exit(1)
-                  
+              # 2. Fetch Manual PRs (First Tab)
+              print("Fetching Manual PRs...")
+              pr_meta = service.spreadsheets().get(spreadsheetId=PR_SHEET_ID).execute()
+              pr_tab = pr_meta['sheets'][0]['properties']['title']
+              pr_result = service.spreadsheets().values().get(spreadsheetId=PR_SHEET_ID, range=f"'{pr_tab}'!A:E").execute()
               with open('manual_prs.csv', 'w', newline='') as f:
-                  writer = csv.writer(f)
-                  writer.writerows(values)
-              print("File saved successfully.")
+                  csv.writer(f).writerows(pr_result.get('values', []))
+              print("manual_prs.csv saved.")
+
+              # 3. Fetch Bug Triage (First Tab)
+              print("Fetching Bug Triage...")
+              tr_meta = service.spreadsheets().get(spreadsheetId=TRIAGE_SHEET_ID).execute()
+              tr_tab = tr_meta['sheets'][0]['properties']['title']
+              tr_result = service.spreadsheets().values().get(spreadsheetId=TRIAGE_SHEET_ID, range=f"'{tr_tab}'!A:C").execute()
+              with open('bug_triage.csv', 'w', newline='') as f:
+                  csv.writer(f).writerows(tr_result.get('values', []))
+              print("bug_triage.csv saved.")
 
           except Exception as e:
-              print(f"Error occurred: {e}")
-              exit(1)
+              print(f"ERROR: {e}")
+              sys.exit(1)
           EOF
 
       - name: Commit and Push
         run: |
           git config --global user.name "DataSyncBot"
           git config --global user.email "actions@github.com"
-          git add manual_prs.csv
-          git commit -m "Auto-update data via Python" || echo "No changes"
+          git add manual_prs.csv bug_triage.csv
+          git commit -m "Auto-sync all CSV data" || echo "No changes"
           git push
