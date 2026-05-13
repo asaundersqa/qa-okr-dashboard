@@ -1,0 +1,25 @@
+name: Sync Google Sheets Data
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs every hour
+  workflow_dispatch:   # Adds a manual "Run" button
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Download Manual PR CSV
+        run: |
+          curl -L "https://docs.google.com/spreadsheets/d/1x5C-L1rMF94EdWPNZNzPHkxiENil8ZcOywiWAcVYjFQ/export?format=csv&gid=0" -o manual_prs.csv
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "DataSyncBot"
+          git config --global user.email "actions@github.com"
+          git add manual_prs.csv
+          git commit -m "Auto-update manual PR data" || echo "No changes to commit"
+          git push
