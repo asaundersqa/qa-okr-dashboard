@@ -2,8 +2,8 @@ name: Sync Google Sheets Data
 
 on:
   schedule:
-    - cron: '0 * * * *'
-  workflow_dispatch:
+    - cron: '0 * * * *' # Runs every hour
+  workflow_dispatch: # Allows you to run it manually
 
 jobs:
   download:
@@ -38,36 +38,55 @@ jobs:
               creds = service_account.Credentials.from_service_account_info(info)
               service = build('sheets', 'v4', credentials=creds)
 
-              # --- CONFIGURATION ---
-              PR_SHEET_ID = '1x5C-L1rMF94EdWPNZNzPHkxiENil8ZcOywiWAcVYjFQ'
-              TRIAGE_SHEET_ID = '1EhoGAzeLDdD0tCXXtBTUWp1i52cUyuUqrJEpNYueZbM'
-              SHIFT_SHEET_ID = '1NhA2Llpf6h_QCXFXa60DzgY7BoXgpvV9bEZCzK5moZ4'
+              # --- CONFIGURATION: SHEET IDs ---
+              SHEETS = {
+                  'manual_prs.csv': {
+                      'id': '1x5C-L1rMF94EdWPNZNzPHkxiENil8ZcOywiWAcVYjFQ',
+                      'range': 'A:E'
+                  },
+                  'bug_triage.csv': {
+                      'id': '1EhoGAzeLDdD0tCXXtBTUWp1i52cUyuUqrJEpNYueZbM',
+                      'range': 'A:C'
+                  },
+                  'shift_left.csv': {
+                      'id': '1NhA2Llpf6h_QCXFXa60DzgY7BoXgpvV9bEZCzK5moZ4',
+                      'range': 'A:B'
+                  },
+                  'qa_tools.csv': {
+                      'id': '1ViDc_-FA9J_5GW0wut9DOsRSv2Egzw_wrpWg_XY0wOw',
+                      'range': 'A:B'
+                  }
+              }
 
-              # 2. Fetch Manual PRs
-              pr_meta = service.spreadsheets().get(spreadsheetId=PR_SHEET_ID).execute()
-              pr_tab = pr_meta['sheets'][0]['properties']['title']
-              pr_res = service.spreadsheets().values().get(spreadsheetId=PR_SHEET_ID, range=f"'{pr_tab}'!A:E").execute()
-              with open('manual_prs.csv', 'w', newline='') as f:
-                  csv.writer(f).writerows(pr_res.get('values', []))
+              # 2. Loop through and fetch each sheet
+              for filename, config in SHEETS.items():
+                  print(f"Fetching {filename}...")
+                  
+                  # Get sheet metadata to find the name of the first tab
+                  meta = service.spreadsheets().get(spreadsheetId=config['id']).execute()
+                  tab_name = meta['sheets'][0]['properties']['title']
+                  
+                  # Get values
+                  result = service.spreadsheets().values().get(
+                      spreadsheetId=config['id'], 
+                      range=f"'{tab_name}'!{config['range']}"
+                  ).execute()
+                  
+                  values = result.get('values', [])
+                  
+                  # Write to CSV
+                  if values:
+                      with open(filename, 'w', newline='') as f:
+                          writer = csv.writer(f)
+                          writer.writerows(values)
+                      print(f"Successfully saved {filename}")
+                  else:
+                      print(f"Warning: No data found for {filename}")
 
-              # 3. Fetch Bug Triage
-              tr_meta = service.spreadsheets().get(spreadsheetId=TRIAGE_SHEET_ID).execute()
-              tr_tab = tr_meta['sheets'][0]['properties']['title']
-              tr_res = service.spreadsheets().values().get(spreadsheetId=TRIAGE_SHEET_ID, range=f"'{tr_tab}'!A:C").execute()
-              with open('bug_triage.csv', 'w', newline='') as f:
-                  csv.writer(f).writerows(tr_res.get('values', []))
-
-              # 4. Fetch Shift Left
-              sh_meta = service.spreadsheets().get(spreadsheetId=SHIFT_SHEET_ID).execute()
-              sh_tab = sh_meta['sheets'][0]['properties']['title']
-              sh_res = service.spreadsheets().values().get(spreadsheetId=SHIFT_SHEET_ID, range=f"'{sh_tab}'!A:B").execute()
-              with open('shift_left.csv', 'w', newline='') as f:
-                  csv.writer(f).writerows(sh_res.get('values', []))
-
-              print("Sync Complete: All 3 CSVs updated.")
+              print("Sync Complete.")
 
           except Exception as e:
-              print(f"ERROR: {e}")
+              print(f"CRITICAL ERROR: {e}")
               sys.exit(1)
           EOF
 
@@ -75,6 +94,6 @@ jobs:
         run: |
           git config --global user.name "DataSyncBot"
           git config --global user.email "actions@github.com"
-          git add manual_prs.csv bug_triage.csv shift_left.csv
-          git commit -m "Auto-sync all OKR data" || echo "No changes"
+          git add manual_prs.csv bug_triage.csv shift_left.csv qa_tools.csv
+          git commit -m "Auto-sync all 4 OKR data sources" || echo "No changes to sync"
           git push
