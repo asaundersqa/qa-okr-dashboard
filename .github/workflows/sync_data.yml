@@ -2,8 +2,8 @@ name: Sync Google Sheets Data
 
 on:
   schedule:
-    - cron: '0 * * * *' # Runs every hour
-  workflow_dispatch:   # Adds a manual "Run" button
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
 jobs:
   download:
@@ -12,14 +12,18 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: Download Manual PR CSV
-        run: |
-          curl -L "https://docs.google.com/spreadsheets/d/1x5C-L1rMF94EdWPNZNzPHkxiENil8ZcOywiWAcVYjFQ/export?format=csv&gid=0" -o manual_prs.csv
+      - name: Fetch Google Sheet as CSV
+        uses: jakejarvis/google-sheets-to-csv@v2.0.1
+        with:
+          sheet_id: '1x5C-L1rMF94EdWPNZNzPHkxiENil8ZcOywiWAcVYjFQ'
+          output: 'manual_prs.csv'
+        env:
+          GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
 
       - name: Commit and Push
         run: |
           git config --global user.name "DataSyncBot"
           git config --global user.email "actions@github.com"
           git add manual_prs.csv
-          git commit -m "Auto-update manual PR data" || echo "No changes to commit"
+          git commit -m "Auto-update data via Service Account" || echo "No changes"
           git push
