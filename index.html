@@ -23,11 +23,7 @@
 
   <aside class="w-72 bg-slate-900 border-r border-slate-800 p-6 flex flex-col no-print z-50">
     <div class="flex items-center gap-3 mb-10">
-      <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </div>
+      <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl">Q</div>
       <div>
         <h1 class="text-white font-bold text-lg leading-tight">QA Command</h1>
         <p class="text-xs text-slate-500">OKR Dashboard</p>
@@ -83,7 +79,6 @@
       <div>
         <p class="text-sm text-cyan-400 font-medium mb-1" id="scopeBadge">All Groups · All Teams</p>
         <h2 class="text-3xl font-bold text-white">OKR Command Center</h2>
-        <p class="text-slate-400 mt-1">Real-time view of QA objectives</p>
       </div>
       <div class="text-right">
         <p class="text-xs text-slate-500 uppercase tracking-wider">Aggregated</p>
@@ -96,15 +91,11 @@
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-10">
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-6">Bug Triage Average (Hours)</h3>
-        <div class="h-64 w-full">
-          <canvas id="triageChart"></canvas>
-        </div>
+        <div class="h-64 w-full"><canvas id="triageChart"></canvas></div>
       </div>
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-6">Manual PR Testing (%)</h3>
-        <div class="h-64 w-full">
-          <canvas id="manualChart"></canvas>
-        </div>
+        <div class="h-64 w-full"><canvas id="manualChart"></canvas></div>
       </div>
     </div>
 
@@ -112,9 +103,7 @@
       <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">Team Breakdown</h3>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
-          <thead>
-            <tr id="tableHeader" class="text-left text-slate-500 border-b border-slate-800"></tr>
-          </thead>
+          <thead><tr id="tableHeader" class="text-left text-slate-500 border-b border-slate-800"></tr></thead>
           <tbody id="teamTable"></tbody>
         </table>
       </div>
@@ -137,12 +126,9 @@ const groupsData = {
 };
 
 let dashboardData = {}; 
-let rawPRData = [];
-let rawTriageData = [];
-let selectedGroups = [];
-let selectedTeams = [];
-let triageChart = null;
-let manualChart = null;
+let rawPRData = [], rawTriageData = [], rawShiftData = [];
+let selectedGroups = [], selectedTeams = [];
+let triageChart = null, manualChart = null;
 
 const allTeamsList = Object.values(groupsData).flat();
 const teamToGroup = {};
@@ -151,11 +137,11 @@ Object.entries(groupsData).forEach(([g, ts]) => ts.forEach(t => teamToGroup[t] =
 const kpis = [
   { key: 'bugTriage', name: 'Bug Triage', unit: 'h', goal: 72, type: 'lower', agg: 'avg', desc: 'Avg time to triage' },
   { key: 'manualPRs', name: 'Manual PRs', unit: '%', goal: 20, type: 'lower', agg: 'avg', desc: 'Manually tested PRs' },
-  { key: 'shiftLeft', name: 'Shift Left', unit: '', goal: 100, type: 'higher', agg: 'sum', desc: 'Total Items (Combined)' },
-  { key: 'qaTools', name: 'QA Tools', unit: '', goal: 14, type: 'higher', agg: 'sum', desc: 'Total Adoptions (Combined)' }
+  { key: 'shiftLeft', name: 'Shift Left', unit: '', goal: 100, type: 'higher', agg: 'sum', desc: 'Total logs (Rows - 1)' },
+  { key: 'qaTools', name: 'QA Tools', unit: '', goal: 14, type: 'higher', agg: 'sum', desc: 'Total Adoptions' }
 ];
 
-// --- DROPDOWN LOGIC ---
+// --- MULTI-SELECT ---
 function initMultiSelect(btnId, dropdownId, optionsId, isGroup = true) {
   const btn = document.getElementById(btnId);
   const dropdown = document.getElementById(dropdownId);
@@ -194,7 +180,6 @@ function initMultiSelect(btnId, dropdownId, optionsId, isGroup = true) {
 function updateTeamOptions() {
   const teamOptionsDiv = document.getElementById('teamOptions');
   const teamsToDisplay = selectedGroups.length === 0 ? allTeamsList : selectedGroups.flatMap(g => groupsData[g]);
-  
   teamOptionsDiv.innerHTML = teamsToDisplay.map(team => `
     <label class="flex items-center gap-2 p-2 hover:bg-slate-700 rounded cursor-pointer text-sm">
       <input type="checkbox" value="${team}" ${selectedTeams.includes(team) ? 'checked' : ''} class="w-4 h-4 rounded border-slate-600 bg-slate-900 text-cyan-500">
@@ -212,55 +197,55 @@ function updateTeamOptions() {
 }
 
 function updateButtonText() {
-  document.getElementById('groupBtnText').innerText = selectedGroups.length ? `${selectedGroups.length} Groups` : "All Groups";
-  document.getElementById('teamBtnText').innerText = selectedTeams.length ? `${selectedTeams.length} Teams` : "All Teams";
+  document.getElementById('groupBtnText').innerText = selectedGroups.length ? `${selectedGroups.length} Selected` : "All Groups";
+  document.getElementById('teamBtnText').innerText = selectedTeams.length ? `${selectedTeams.length} Selected` : "All Teams";
 }
 
 window.onclick = () => document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
 
-// --- FETCHING ---
+// --- DATA ---
 async function fetchCSVData() {
     try {
-        const [resPR, resTriage] = await Promise.all([
-            fetch('manual_prs.csv'),
-            fetch('bug_triage.csv')
+        const [resPR, resTr, resSh] = await Promise.all([
+            fetch('manual_prs.csv'), fetch('bug_triage.csv'), fetch('shift_left.csv')
         ]);
-        const prText = resPR.ok ? await resPR.text() : "";
-        const triageText = resTriage.ok ? await resTriage.text() : "";
-
-        if (prText) {
-            const rows = prText.split('\n').filter(r => r.trim() !== '');
+        
+        if (resPR.ok) {
+            const rows = (await resPR.text()).split('\n').filter(r => r.trim() !== '');
             rawPRData = rows.slice(1).map(r => {
                 const c = r.split(',').map(v => v.trim());
                 return { week: c[0], team: c[1], manual: parseInt(c[2]) || 0, total: parseInt(c[3]) || 0 };
             });
         }
-        if (triageText) {
-            const rows = triageText.split('\n').filter(r => r.trim() !== '');
+        if (resTr.ok) {
+            const rows = (await resTr.text()).split('\n').filter(r => r.trim() !== '');
             rawTriageData = rows.slice(1).map(r => {
                 const c = r.split(',').map(v => v.trim());
                 return { week: c[0], team: c[1], hours: parseFloat(c[2]) || 0 };
+            });
+        }
+        if (resSh.ok) {
+            const rows = (await resSh.text()).split('\n').filter(r => r.trim() !== '');
+            rawShiftData = rows.slice(1).map(r => {
+                const c = r.split(',').map(v => v.trim());
+                const [m, d, y] = c[1].split('/');
+                return { date: new Date(y, m - 1, d) };
             });
         }
         refresh();
     } catch (e) { console.error(e); }
 }
 
-function getActiveTeams() {
-  if (selectedTeams.length) return selectedTeams;
-  if (selectedGroups.length) return selectedGroups.flatMap(g => groupsData[g]);
-  return allTeamsList;
-}
-
-// --- REFRESH ---
 function refresh() {
-    const activeTeams = getActiveTeams();
+    const activeTeams = (selectedTeams.length) ? selectedTeams : (selectedGroups.length ? selectedGroups.flatMap(g => groupsData[g]) : allTeamsList);
     const weeksToLookBack = parseInt(document.getElementById('periodSelect').value);
+    
     allTeamsList.forEach(t => dashboardData[t] = { bugTriage: 0, manualPRs: 0, shiftLeft: 0, qaTools: 0 });
 
     const allWeeks = [...new Set([...rawPRData.map(d => d.week), ...rawTriageData.map(d => d.week)])].sort().reverse();
     const targetWeeks = allWeeks.slice(0, weeksToLookBack);
 
+    // Calculate Team specific metrics
     activeTeams.forEach(team => {
         const prRows = rawPRData.filter(d => d.team === team && targetWeeks.includes(d.week));
         if (prRows.length > 0) {
@@ -269,58 +254,87 @@ function refresh() {
             dashboardData[team].manualPRs = totalT > 0 ? (totalM / totalT) * 100 : 0;
         }
         const trRows = rawTriageData.filter(d => d.team === team && targetWeeks.includes(d.week));
-        if (trRows.length > 0) {
-            dashboardData[team].bugTriage = trRows.reduce((s, r) => s + r.hours, 0) / trRows.length;
-        }
+        if (trRows.length > 0) dashboardData[team].bugTriage = trRows.reduce((s, r) => s + r.hours, 0) / trRows.length;
     });
 
+    // Calculate Global Shift Left
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - (weeksToLookBack * 7));
+    const currentShiftLogs = rawShiftData.filter(item => item.date >= cutoff).length;
+    const shiftLeftValue = currentShiftLogs > 0 ? currentShiftLogs - 1 : 0;
+
+    // Update UI
+    document.getElementById('scopeBadge').innerText = `${selectedGroups.length ? selectedGroups.join(', ') : 'All Groups'} · ${selectedTeams.length ? selectedTeams.length + ' Teams' : 'All Teams'}`;
     document.getElementById('teamCount').innerText = `${activeTeams.length} Teams`;
-    renderKPIs(activeTeams); 
+    
+    renderKPIs(activeTeams, shiftLeftValue); 
     renderTable(activeTeams); 
     updateCharts(activeTeams, targetWeeks);
 }
 
+function renderKPIs(teams, shiftLeftVal) {
+  const isAnyFilterActive = selectedTeams.length > 0 || selectedGroups.length > 0;
+  const grid = document.getElementById('kpiGrid');
+  grid.innerHTML = '';
+
+  kpis.forEach(kpi => {
+    if (isAnyFilterActive && (kpi.key === 'shiftLeft' || kpi.key === 'qaTools')) return;
+    
+    const val = kpi.key === 'shiftLeft' ? shiftLeftVal : aggregate(teams, kpi);
+    const status = statusFor(kpi, val);
+    const pct = progressPct(kpi, val);
+    const onTrack = status === 'on';
+    
+    grid.innerHTML += `
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+        <div class="flex justify-between items-start mb-4">
+          <p class="text-xs font-semibold uppercase text-slate-500">${kpi.name}</p>
+          <span class="inline-flex px-2 py-1 rounded-full ${onTrack ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'} text-xs border border-current/20">${onTrack ? 'On Track' : 'At Risk'}</span>
+        </div>
+        <p class="text-4xl font-bold text-white mb-4">${formatValue(kpi, val)}</p>
+        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div class="progress-bar h-full ${onTrack ? 'bg-cyan-500' : 'bg-amber-500'} rounded-full" style="width: ${pct}%"></div>
+        </div>
+      </div>`;
+  });
+}
+
+function renderTable(teams) {
+  const isAnyFilterActive = selectedTeams.length > 0 || selectedGroups.length > 0;
+  document.getElementById('tableHeader').innerHTML = `<th class="py-3 px-2">Team</th><th class="py-3 px-2">Group</th><th class="py-3 px-2 text-center">Bug Triage</th><th class="py-3 px-2 text-center">Manual PRs</th>${!isAnyFilterActive ? '<th class="py-3 px-2 text-center">Shift Left</th><th class="py-3 px-2 text-center">QA Tools</th>' : ''}`;
+  document.getElementById('teamTable').innerHTML = teams.map(t => {
+    const d = dashboardData[t];
+    const cell = (kpi, val) => `<td class="py-3 px-2 ${statusFor(kpi, val) === 'on' ? 'text-emerald-400' : 'text-amber-400'} text-center">${formatValue(kpi, val)}</td>`;
+    return `<tr class="border-b border-slate-800/50 hover:bg-slate-800/30"><td class="py-3 px-2 text-white">${t}</td><td class="py-3 px-2 text-slate-400 text-xs">${teamToGroup[t] || 'N/A'}</td>${cell(kpis[0], d.bugTriage)}${cell(kpis[1], d.manualPRs)}${!isAnyFilterActive ? '<td class="text-center text-slate-600">--</td><td class="text-center text-slate-600">--</td>' : ''}</tr>`;
+  }).join('');
+}
+
 function updateCharts(activeTeams, targetWeeks) {
     const chronologicalWeeks = [...targetWeeks].reverse();
-    const triageData = [];
-    const manualData = [];
-
+    const triageData = [], manualData = [];
     chronologicalWeeks.forEach(week => {
         const trRows = rawTriageData.filter(d => activeTeams.includes(d.team) && d.week === week);
-        const avgTr = trRows.length ? trRows.reduce((s, r) => s + r.hours, 0) / trRows.length : null;
-        triageData.push(avgTr);
-
+        triageData.push(trRows.length ? trRows.reduce((s, r) => s + r.hours, 0) / trRows.length : null);
         const prRows = rawPRData.filter(d => activeTeams.includes(d.team) && d.week === week);
-        const totalM = prRows.reduce((s, r) => s + r.manual, 0);
-        const totalT = prRows.reduce((s, r) => s + r.total, 0);
+        const totalM = prRows.reduce((s, r) => s + r.manual, 0), totalT = prRows.reduce((s, r) => s + r.total, 0);
         manualData.push(totalT > 0 ? (totalM / totalT) * 100 : null);
     });
 
-    const chartOptions = (yTitle, yMax) => ({
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
-            y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' }, title: { display: true, text: yTitle, color: '#64748b' }, min: 0, max: yMax }
-        }
+    const cfg = (yTitle, yMax) => ({
+        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+        scales: { x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }, y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' }, title: { display: true, text: yTitle, color: '#64748b' }, min: 0, max: yMax } }
     });
 
     if (triageChart) triageChart.destroy();
     triageChart = new Chart(document.getElementById('triageChart'), {
-        type: 'line',
-        data: { labels: chronologicalWeeks, datasets: [{ data: triageData, borderColor: '#06b6d4', borderWidth: 2, tension: 0.3, pointRadius: 3 }] },
-        options: chartOptions('Hours', 100)
+        type: 'line', data: { labels: chronologicalWeeks, datasets: [{ data: triageData, borderColor: '#06b6d4', borderWidth: 2, tension: 0.3 }] }, options: cfg('Hours', 100)
     });
-
     if (manualChart) manualChart.destroy();
     manualChart = new Chart(document.getElementById('manualChart'), {
-        type: 'line',
-        data: { labels: chronologicalWeeks, datasets: [{ data: manualData, borderColor: '#10b981', borderWidth: 2, tension: 0.3, pointRadius: 3 }] },
-        options: chartOptions('Percentage (%)', 100)
+        type: 'line', data: { labels: chronologicalWeeks, datasets: [{ data: manualData, borderColor: '#10b981', borderWidth: 2, tension: 0.3 }] }, options: cfg('Percentage (%)', 100)
     });
 }
 
-// --- RENDER HELPERS ---
 function aggregate(teams, kpi) {
   const sum = teams.reduce((acc, t) => acc + (dashboardData[t] ? dashboardData[t][kpi.key] : 0), 0);
   return kpi.agg === 'sum' ? sum : (teams.length ? sum / teams.length : 0);
@@ -332,41 +346,6 @@ function progressPct(kpi, value) {
 }
 function formatValue(kpi, value) { return `${Number.isInteger(value) ? value : value.toFixed(1)}${kpi.unit}`; }
 
-function renderKPIs(teams) {
-  const isAnyFilterActive = selectedTeams.length > 0 || selectedGroups.length > 0;
-  const grid = document.getElementById('kpiGrid');
-  grid.innerHTML = '';
-  kpis.forEach(kpi => {
-    if (isAnyFilterActive && (kpi.key === 'shiftLeft' || kpi.key === 'qaTools')) return;
-    const val = aggregate(teams, kpi);
-    const status = statusFor(kpi, val);
-    const pct = progressPct(kpi, val);
-    const onTrack = status === 'on';
-    grid.innerHTML += `
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
-        <div class="flex justify-between items-start mb-4">
-          <p class="text-xs font-semibold uppercase text-slate-500">${kpi.name}</p>
-          <span class="inline-flex px-2 py-1 rounded-full ${onTrack ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'} text-xs border border-current/20">${onTrack ? 'On Track' : 'At Risk'}</span>
-        </div>
-        <p class="text-4xl font-bold text-white mb-4">${formatValue(kpi, val)}</p>
-        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden"><div class="progress-bar h-full ${onTrack ? 'bg-cyan-500' : 'bg-amber-500'} rounded-full" style="width: ${pct}%"></div></div>
-      </div>`;
-  });
-}
-
-function renderTable(teams) {
-  const isAnyFilterActive = selectedTeams.length > 0 || selectedGroups.length > 0;
-  document.getElementById('tableHeader').innerHTML = `
-    <th class="py-3 px-2">Team</th><th class="py-3 px-2">Group</th><th class="py-3 px-2 text-center">Bug Triage</th><th class="py-3 px-2 text-center">Manual PRs</th>
-    ${!isAnyFilterActive ? '<th class="py-3 px-2 text-center">Shift Left</th><th class="py-3 px-2 text-center">QA Tools</th>' : ''}`;
-  document.getElementById('teamTable').innerHTML = teams.map(t => {
-    const d = dashboardData[t];
-    const cell = (kpi, val) => `<td class="py-3 px-2 ${statusFor(kpi, val) === 'on' ? 'text-emerald-400' : 'text-amber-400'} text-center">${formatValue(kpi, val)}</td>`;
-    return `<tr class="border-b border-slate-800/50 hover:bg-slate-800/30"><td class="py-3 px-2 text-white">${t}</td><td class="py-3 px-2 text-slate-400 text-xs">${teamToGroup[t] || 'N/A'}</td>${cell(kpis[0], d.bugTriage)}${cell(kpis[1], d.manualPRs)}${!isAnyFilterActive ? cell(kpis[2], d.shiftLeft) + cell(kpis[3], d.qaTools) : ''}</tr>`;
-  }).join('');
-}
-
-// --- INIT ---
 initMultiSelect('groupBtn', 'groupDropdown', 'groupOptions', true);
 initMultiSelect('teamBtn', 'teamDropdown', 'teamOptions', false);
 document.getElementById('periodSelect').onchange = fetchCSVData;
@@ -374,7 +353,7 @@ fetchCSVData();
 
 exportPdfBtn.addEventListener('click', () => {
   const element = document.getElementById('mainContent');
-  html2pdf().set({ margin: 0.3, filename: 'QA-Report.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, backgroundColor: '#020617' }, jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' } }).from(element).save();
+  html2pdf().set({ margin: 0.3, filename: 'QA-Report.pdf', html2canvas: { scale: 2, backgroundColor: '#020617' }, jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' } }).from(element).save();
 });
 </script>
 </body>
