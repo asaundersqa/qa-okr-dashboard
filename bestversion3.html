@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>QA OKR Command Center</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  body { font-family: 'Inter', sans-serif; }
+  .progress-bar { transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+</style>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen">
+
+<div class="flex min-h-screen">
+
+  <aside class="w-72 bg-slate-900 border-r border-slate-800 p-6 flex flex-col no-print">
+    <div class="flex items-center gap-3 mb-10">
+      <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-white font-bold text-lg leading-tight">QA Command</h1>
+        <p class="text-xs text-slate-500">OKR Dashboard</p>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Time Period</label>
+        <select id="periodSelect" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+          <option value="2w">2 Weeks</option>
+          <option value="8w" selected>8 Weeks</option>
+          <option value="12w">12 Weeks</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Group</label>
+        <select id="groupSelect" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+          <option value="all">All Groups</option>
+          <option value="Data Consistency">Data Consistency</option>
+          <option value="AI">AI</option>
+          <option value="Process">Process</option>
+          <option value="Growth">Growth</option>
+          <option value="Planning">Planning</option>
+          <option value="Cloud">Cloud</option>
+          <option value="Intelligent Interface">Intelligent Interface</option>
+          <option value="Project Spillover">Project Spillover</option>
+          <option value="Core">Core</option>
+          <option value="Accelerator Platform">Accelerator Platform</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Team</label>
+        <select id="teamSelect" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+          <option value="all">All Teams</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mt-auto pt-6 border-t border-slate-800">
+      <button id="exportPdfBtn" class="w-full mb-4 bg-gradient-to-br from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium text-sm rounded-lg px-3 py-2.5 flex items-center justify-center gap-2 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+        PDF Export
+      </button>
+      <div class="text-xs text-slate-500">
+        <p class="flex items-center gap-2">
+          <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+          System operational
+        </p>
+        <p class="mt-2">Q4 2026 · Snapshot</p>
+      </div>
+    </div>
+  </aside>
+
+  <main class="flex-1 p-10 overflow-y-auto" id="mainContent">
+    <header class="mb-10 flex justify-between items-end">
+      <div>
+        <p class="text-sm text-cyan-400 font-medium mb-1" id="scopeBadge">All Groups · All Teams</p>
+        <h2 class="text-3xl font-bold text-white">OKR Command Center</h2>
+        <p class="text-slate-400 mt-1">Real-time view of QA objectives</p>
+      </div>
+      <div class="text-right">
+        <p class="text-xs text-slate-500 uppercase tracking-wider">Aggregated</p>
+        <p class="text-2xl font-bold text-white" id="teamCount">-- Teams</p>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6" id="kpiGrid"></div>
+
+    <div class="mt-10 bg-slate-900 border border-slate-800 rounded-xl p-6">
+      <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4">Team Breakdown</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-slate-500 border-b border-slate-800">
+              <th class="py-3 px-2 font-medium">Team</th>
+              <th class="py-3 px-2 font-medium">Group</th>
+              <th class="py-3 px-2 font-medium text-center">Bug Triage</th>
+              <th class="py-3 px-2 font-medium text-center">Manual PRs</th>
+              <th class="py-3 px-2 font-medium text-center">Shift Left</th>
+              <th class="py-3 px-2 font-medium text-center">QA Tools</th>
+            </tr>
+          </thead>
+          <tbody id="teamTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const groups = {
+  "Data Consistency": ["DC1", "DC2", "DC3"],
+  "AI": ["AI1", "AI2", "AI3", "AI4", "AI5", "AI6"],
+  "Process": ["Process 1", "Process 2", "Process 3", "Enterprise Architecture"],
+  "Project Spillover": ["Intelligent Feature Adoption", "License Request/Grants", "New Enterprise User"],
+  "Growth": ["Growth"],
+  "Planning": ["Planning 1", "Planning 2"],
+  "Cloud": ["Cloud 1", "Cloud 2"],
+  "Intelligent Interface": ["Intelligent Interface 1", "Intelligent Interface 2", "Intelligent Interface 3", "Intelligent Interface 4", "UFO"],
+  "Core": ["Papercuts", "Core Support", "Change Management", "Templates"],
+  "Accelerator Platform": ["Accelerator Platform 1", "Accelerator Platform 2"]
+};
+
+// Simplified base data structure for all teams
+const baseData = { bugTriage: 0, manualPRs: 0, shiftLeft: 0, qaTools: 0 };
+const allTeamsList = Object.values(groups).flat();
+
+const generateBlankData = () => {
+    let obj = {};
+    allTeamsList.forEach(team => { obj[team] = { ...baseData }; });
+    return obj;
+};
+
+const dataByPeriod = {
+  "2w": generateBlankData(),
+  "8w": generateBlankData(),
+  "12w": generateBlankData()
+};
+
+const teamToGroup = {};
+Object.entries(groups).forEach(([g, ts]) => ts.forEach(t => teamToGroup[t] = g));
+
+const kpis = [
+  { key: 'bugTriage', name: 'Bug Triage', unit: 'h', goal: 72, type: 'lower', agg: 'avg', desc: 'Avg time to triage' },
+  { key: 'manualPRs', name: 'Manual PRs', unit: '%', goal: 20, type: 'lower', agg: 'avg', desc: 'Manually tested PRs' },
+  { key: 'shiftLeft', name: 'Shift Left', unit: '', goal: 100, type: 'higher', agg: 'sum', desc: 'Total Items (Combined)' },
+  { key: 'qaTools', name: 'QA Tools', unit: '', goal: 14, type: 'higher', agg: 'sum', desc: 'Total Adoptions (Combined)' }
+];
+
+const periodSelect = document.getElementById('periodSelect');
+const groupSelect = document.getElementById('groupSelect');
+const teamSelect = document.getElementById('teamSelect');
+const kpiGrid = document.getElementById('kpiGrid');
+const scopeBadge = document.getElementById('scopeBadge');
+const teamCount = document.getElementById('teamCount');
+const teamTable = document.getElementById('teamTable');
+const exportPdfBtn = document.getElementById('exportPdfBtn');
+
+function getData() { return dataByPeriod[periodSelect.value]; }
+
+function updateTeamDropdown() {
+  const g = groupSelect.value;
+  teamSelect.innerHTML = '<option value="all">All Teams</option>';
+  const teams = g === 'all' ? allTeamsList : groups[g];
+  teams.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t; opt.textContent = t;
+    teamSelect.appendChild(opt);
+  });
+}
+
+function getSelectedTeams() {
+  const g = groupSelect.value, t = teamSelect.value;
+  if (t !== 'all') return [t];
+  if (g === 'all') return allTeamsList;
+  return groups[g];
+}
+
+function aggregate(teams, kpi) {
+  const data = getData();
+  const sum = teams.reduce((acc, t) => acc + (data[t] ? data[t][kpi.key] : 0), 0);
+  return kpi.agg === 'sum' ? sum : (teams.length ? sum / teams.length : 0);
+}
+
+function statusFor(kpi, value) {
+  if (kpi.type === 'lower') return value <= kpi.goal ? 'on' : 'risk';
+  return value >= kpi.goal ? 'on' : 'risk';
+}
+
+function progressPct(kpi, value) {
+  if (kpi.type === 'lower') {
+    return value === 0 ? 100 : Math.max(0, Math.min(100, (kpi.goal / value) * 100));
+  }
+  return Math.max(0, Math.min(100, (value / kpi.goal) * 100));
+}
+
+function formatValue(kpi, value) {
+  const v = Number.isInteger(value) ? value : value.toFixed(1);
+  return `${v}${kpi.unit}`;
+}
+
+function renderKPIs() {
+  const teams = getSelectedTeams();
+  kpiGrid.innerHTML = '';
+  kpis.forEach(kpi => {
+    const value = aggregate(teams, kpi);
+    const status = statusFor(kpi, value);
+    const pct = progressPct(kpi, value);
+    const onTrack = status === 'on';
+    
+    const badge = onTrack
+      ? '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>On Track</span>'
+      : '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-medium border border-amber-500/20"><span class="w-1.5 h-1.5 bg-amber-400 rounded-full"></span>At Risk</span>';
+    
+    const barColor = onTrack ? 'bg-gradient-to-r from-emerald-500 to-cyan-500' : 'bg-gradient-to-r from-amber-500 to-orange-500';
+    const goalText = kpi.type === 'lower' ? `< ${kpi.goal}${kpi.unit}` : `${kpi.goal}${kpi.unit}`;
+
+    kpiGrid.innerHTML += `
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-slate-700 transition-colors">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">${kpi.name}</p>
+            <p class="text-xs text-slate-600 mt-0.5">${kpi.desc}</p>
+          </div>
+          ${badge}
+        </div>
+        <div class="flex items-baseline gap-2 mb-4">
+          <span class="text-4xl font-bold text-white">${formatValue(kpi, value)}</span>
+          <span class="text-xs text-slate-500">/ goal ${goalText}</span>
+        </div>
+        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div class="progress-bar h-full ${barColor} rounded-full" style="width: ${pct}%"></div>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">${pct.toFixed(0)}% of target</p>
+      </div>
+    `;
+  });
+}
+
+function renderTable() {
+  const teams = getSelectedTeams();
+  const data = getData();
+  teamTable.innerHTML = teams.map(t => {
+    const d = data[t] || baseData;
+    const cell = (kpi, val) => {
+      const ok = statusFor(kpi, val) === 'on';
+      const color = ok ? 'text-emerald-400' : 'text-amber-400';
+      return `<td class="py-3 px-2 ${color} font-medium text-center">${val}${kpi.unit}</td>`;
+    };
+    return `
+      <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+        <td class="py-3 px-2 text-white font-medium">${t}</td>
+        <td class="py-3 px-2 text-slate-400">${teamToGroup[t] || 'N/A'}</td>
+        ${cell(kpis[0], d.bugTriage)}
+        ${cell(kpis[1], d.manualPRs)}
+        ${cell(kpis[2], d.shiftLeft)}
+        ${cell(kpis[3], d.qaTools)}
+      </tr>
+    `;
+  }).join('');
+}
+
+function updateHeader() {
+  const g = groupSelect.value, t = teamSelect.value;
+  const teams = getSelectedTeams();
+  const periodLabel = { '2w': '2 Weeks', '8w': '8 Weeks', '12w': '12 Weeks' }[periodSelect.value];
+  scopeBadge.textContent = `${g === 'all' ? 'All Groups' : g} · ${t === 'all' ? 'All Teams' : t} · ${periodLabel}`;
+  teamCount.textContent = `${teams.length} Team${teams.length !== 1 ? 's' : ''}`;
+}
+
+function refresh() { updateHeader(); renderKPIs(); renderTable(); }
+
+periodSelect.addEventListener('change', refresh);
+groupSelect.addEventListener('change', () => { updateTeamDropdown(); refresh(); });
+teamSelect.addEventListener('change', refresh);
+
+exportPdfBtn.addEventListener('click', () => {
+  const element = document.getElementById('mainContent');
+  html2pdf().set({
+    margin: 0.3, filename: 'QA-OKR-Report.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, backgroundColor: '#020617' },
+    jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }
+  }).from(element).save();
+});
+
+updateTeamDropdown();
+refresh();
+</script>
+</body>
+</html>
