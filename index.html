@@ -10,13 +10,17 @@
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
   body { font-family: 'Inter', sans-serif; }
   .progress-bar { transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+  .dropdown-content { display: none; }
+  .dropdown-content.show { display: block; }
 </style>
 </head>
 <body class="bg-slate-950 text-slate-200 min-h-screen">
 
 <div class="flex min-h-screen">
 
-  <aside class="w-72 bg-slate-900 border-r border-slate-800 p-6 flex flex-col no-print">
+  <aside class="w-72 bg-slate-900 border-r border-slate-800 p-6 flex flex-col no-print z-50">
     <div class="flex items-center gap-3 mb-10">
       <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -39,28 +43,26 @@
         </select>
       </div>
 
-      <div>
-        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Group</label>
-        <select id="groupSelect" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
-          <option value="all">All Groups</option>
-          <option value="Data Consistency">Data Consistency</option>
-          <option value="AI">AI</option>
-          <option value="Process">Process</option>
-          <option value="Growth">Growth</option>
-          <option value="Planning">Planning</option>
-          <option value="Cloud">Cloud</option>
-          <option value="Intelligent Interface">Intelligent Interface</option>
-          <option value="Project Spillover">Project Spillover</option>
-          <option value="Core">Core</option>
-          <option value="Accelerator Platform">Accelerator Platform</option>
-        </select>
+      <div class="relative">
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Groups</label>
+        <button id="groupBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center">
+          <span id="groupBtnText">All Groups</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+        </button>
+        <div id="groupDropdown" class="dropdown-content absolute w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar p-2">
+           <div id="groupOptions"></div>
+        </div>
       </div>
 
-      <div>
-        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Team</label>
-        <select id="teamSelect" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
-          <option value="all">All Teams</option>
-        </select>
+      <div class="relative">
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Teams</label>
+        <button id="teamBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center">
+          <span id="teamBtnText">All Teams</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+        </button>
+        <div id="teamDropdown" class="dropdown-content absolute w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar p-2">
+           <div id="teamOptions"></div>
+        </div>
       </div>
     </div>
 
@@ -101,8 +103,7 @@
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr id="tableHeader" class="text-left text-slate-500 border-b border-slate-800">
-              </tr>
+            <tr id="tableHeader" class="text-left text-slate-500 border-b border-slate-800"></tr>
           </thead>
           <tbody id="teamTable"></tbody>
         </table>
@@ -112,7 +113,7 @@
 </div>
 
 <script>
-const groups = {
+const groupsData = {
   "Data Consistency": ["DC1", "DC2", "DC3"],
   "AI": ["AI1", "AI2", "AI3", "AI4", "AI5", "AI6"],
   "Process": ["Process 1", "Process 2", "Process 3", "Enterprise Architecture"],
@@ -126,9 +127,11 @@ const groups = {
 };
 
 let dashboardData = {}; 
-const allTeamsList = Object.values(groups).flat();
+let selectedGroups = [];
+let selectedTeams = [];
+const allTeamsList = Object.values(groupsData).flat();
 const teamToGroup = {};
-Object.entries(groups).forEach(([g, ts]) => ts.forEach(t => teamToGroup[t] = g));
+Object.entries(groupsData).forEach(([g, ts]) => ts.forEach(t => teamToGroup[t] = g));
 
 const kpis = [
   { key: 'bugTriage', name: 'Bug Triage', unit: 'h', goal: 72, type: 'lower', agg: 'avg', desc: 'Avg time to triage' },
@@ -137,15 +140,72 @@ const kpis = [
   { key: 'qaTools', name: 'QA Tools', unit: '', goal: 14, type: 'higher', agg: 'sum', desc: 'Total Adoptions (Combined)' }
 ];
 
-const periodSelect = document.getElementById('periodSelect');
-const groupSelect = document.getElementById('groupSelect');
-const teamSelect = document.getElementById('teamSelect');
-const kpiGrid = document.getElementById('kpiGrid');
-const scopeBadge = document.getElementById('scopeBadge');
-const teamCount = document.getElementById('teamCount');
-const tableHeader = document.getElementById('tableHeader');
-const teamTable = document.getElementById('teamTable');
-const exportPdfBtn = document.getElementById('exportPdfBtn');
+// Initialize Dropdowns
+function initMultiSelect(btnId, dropdownId, optionsId, data, isGroup = true) {
+  const btn = document.getElementById(btnId);
+  const dropdown = document.getElementById(dropdownId);
+  const optionsDiv = document.getElementById(optionsId);
+
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('show');
+  };
+
+  const renderOptions = (items) => {
+    optionsDiv.innerHTML = items.map(item => `
+      <label class="flex items-center gap-2 p-2 hover:bg-slate-700 rounded cursor-pointer text-sm">
+        <input type="checkbox" value="${item}" class="w-4 h-4 rounded border-slate-600 bg-slate-900 text-cyan-500 focus:ring-cyan-500">
+        ${item}
+      </label>
+    `).join('');
+
+    optionsDiv.querySelectorAll('input').forEach(input => {
+      input.onchange = () => {
+        if (isGroup) {
+          selectedGroups = Array.from(optionsDiv.querySelectorAll('input:checked')).map(i => i.value);
+          updateTeamOptions();
+        } else {
+          selectedTeams = Array.from(optionsDiv.querySelectorAll('input:checked')).map(i => i.value);
+        }
+        updateButtonText();
+        refresh();
+      };
+    });
+  };
+
+  if (isGroup) renderOptions(Object.keys(data));
+  else renderOptions(allTeamsList);
+}
+
+function updateTeamOptions() {
+  const teamOptionsDiv = document.getElementById('teamOptions');
+  const teamsToDisplay = selectedGroups.length === 0 ? allTeamsList : selectedGroups.flatMap(g => groupsData[g]);
+  
+  teamOptionsDiv.innerHTML = teamsToDisplay.map(team => `
+    <label class="flex items-center gap-2 p-2 hover:bg-slate-700 rounded cursor-pointer text-sm">
+      <input type="checkbox" value="${team}" ${selectedTeams.includes(team) ? 'checked' : ''} class="w-4 h-4 rounded border-slate-600 bg-slate-900 text-cyan-500 focus:ring-cyan-500">
+      ${team}
+    </label>
+  `).join('');
+
+  teamOptionsDiv.querySelectorAll('input').forEach(input => {
+    input.onchange = () => {
+      selectedTeams = Array.from(teamOptionsDiv.querySelectorAll('input:checked')).map(i => i.value);
+      updateButtonText();
+      refresh();
+    };
+  });
+}
+
+function updateButtonText() {
+  document.getElementById('groupBtnText').innerText = selectedGroups.length ? `${selectedGroups.length} Selected` : "All Groups";
+  document.getElementById('teamBtnText').innerText = selectedTeams.length ? `${selectedTeams.length} Selected` : "All Teams";
+}
+
+// Global click to close dropdowns
+window.onclick = () => {
+  document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+};
 
 async function fetchCSVData() {
     try {
@@ -158,7 +218,7 @@ async function fetchCSVData() {
             const cols = row.split(',').map(c => c.trim());
             return { week: cols[0], team: cols[1], manual: parseInt(cols[2]) || 0, total: parseInt(cols[3]) || 0 };
         });
-        const weeksToLookBack = parseInt(periodSelect.value);
+        const weeksToLookBack = parseInt(document.getElementById('periodSelect').value);
         const uniqueWeeks = [...new Set(rawData.map(d => d.week))].sort().reverse();
         const targetWeeks = uniqueWeeks.slice(0, weeksToLookBack);
         allTeamsList.forEach(team => {
@@ -170,28 +230,13 @@ async function fetchCSVData() {
             }
         });
         refresh();
-    } catch (e) {
-        console.error("CSV Parsing Error:", e);
-        refresh();
-    }
+    } catch (e) { console.error("CSV Parsing Error:", e); refresh(); }
 }
 
-function updateTeamDropdown() {
-  const g = groupSelect.value;
-  teamSelect.innerHTML = '<option value="all">All Teams</option>';
-  const teams = g === 'all' ? allTeamsList : groups[g];
-  teams.forEach(t => {
-    const opt = document.createElement('option');
-    opt.value = t; opt.textContent = t;
-    teamSelect.appendChild(opt);
-  });
-}
-
-function getSelectedTeams() {
-  const g = groupSelect.value, t = teamSelect.value;
-  if (t !== 'all') return [t];
-  if (g === 'all') return allTeamsList;
-  return groups[g];
+function getActiveTeams() {
+  if (selectedTeams.length) return selectedTeams;
+  if (selectedGroups.length) return selectedGroups.flatMap(g => groupsData[g]);
+  return allTeamsList;
 }
 
 function aggregate(teams, kpi) {
@@ -200,128 +245,84 @@ function aggregate(teams, kpi) {
 }
 
 function statusFor(kpi, value) {
-  if (kpi.type === 'lower') return value <= kpi.goal ? 'on' : 'risk';
-  return value >= kpi.goal ? 'on' : 'risk';
+  return kpi.type === 'lower' ? (value <= kpi.goal ? 'on' : 'risk') : (value >= kpi.goal ? 'on' : 'risk');
 }
 
 function progressPct(kpi, value) {
-  if (kpi.type === 'lower') {
-    return value === 0 ? 100 : Math.max(0, Math.min(100, (kpi.goal / value) * 100));
-  }
+  if (kpi.type === 'lower') return value === 0 ? 100 : Math.max(0, Math.min(100, (kpi.goal / value) * 100));
   return Math.max(0, Math.min(100, (value / kpi.goal) * 100));
 }
 
 function formatValue(kpi, value) {
-  const v = Number.isInteger(value) ? value : value.toFixed(1);
-  return `${v}${kpi.unit}`;
+  return `${Number.isInteger(value) ? value : value.toFixed(1)}${kpi.unit}`;
 }
 
 function renderKPIs() {
-  const teams = getSelectedTeams();
-  const isFiltered = groupSelect.value !== 'all' || teamSelect.value !== 'all';
+  const teams = getActiveTeams();
+  const isSpecificFilter = selectedTeams.length > 0 || (selectedGroups.length === 1 && selectedGroups[0] !== 'all');
   
-  kpiGrid.innerHTML = '';
+  const grid = document.getElementById('kpiGrid');
+  grid.innerHTML = '';
   kpis.forEach(kpi => {
-    if (isFiltered && (kpi.key === 'shiftLeft' || kpi.key === 'qaTools')) return;
-
-    const value = aggregate(teams, kpi);
-    const status = statusFor(kpi, value);
-    const pct = progressPct(kpi, value);
+    if (isSpecificFilter && (kpi.key === 'shiftLeft' || kpi.key === 'qaTools')) return;
+    const val = aggregate(teams, kpi);
+    const status = statusFor(kpi, val);
+    const pct = progressPct(kpi, val);
     const onTrack = status === 'on';
     
-    const badge = onTrack
-      ? '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>On Track</span>'
-      : '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-medium border border-amber-500/20"><span class="w-1.5 h-1.5 bg-amber-400 rounded-full"></span>At Risk</span>';
-    
-    const barColor = onTrack ? 'bg-gradient-to-r from-emerald-500 to-cyan-500' : 'bg-gradient-to-r from-amber-500 to-orange-500';
-    const goalText = kpi.type === 'lower' ? `< ${kpi.goal}${kpi.unit}` : `${kpi.goal}${kpi.unit}`;
-
-    kpiGrid.innerHTML += `
+    grid.innerHTML += `
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <div class="flex justify-between items-start mb-4">
-          <div>
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">${kpi.name}</p>
-            <p class="text-xs text-slate-600 mt-0.5">${kpi.desc}</p>
-          </div>
-          ${badge}
+          <div><p class="text-xs font-semibold uppercase text-slate-500">${kpi.name}</p></div>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${onTrack ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'} text-xs border border-current/20">
+            ${kpi.name}
+          </span>
         </div>
-        <div class="flex items-baseline gap-2 mb-4">
-          <span class="text-4xl font-bold text-white">${formatValue(kpi, value)}</span>
-          <span class="text-xs text-slate-500">/ goal ${goalText}</span>
-        </div>
+        <div class="flex items-baseline gap-2 mb-4"><span class="text-4xl font-bold text-white">${formatValue(kpi, val)}</span></div>
         <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-          <div class="progress-bar h-full ${barColor} rounded-full" style="width: ${pct}%"></div>
+          <div class="progress-bar h-full ${onTrack ? 'bg-cyan-500' : 'bg-amber-500'} rounded-full" style="width: ${pct}%"></div>
         </div>
-        <p class="text-xs text-slate-500 mt-2">${pct.toFixed(0)}% of target</p>
-      </div>
-    `;
+      </div>`;
   });
 }
 
 function renderTable() {
-  const teams = getSelectedTeams();
-  const isFiltered = groupSelect.value !== 'all' || teamSelect.value !== 'all';
+  const teams = getActiveTeams();
+  const isSpecificFilter = selectedTeams.length > 0 || selectedGroups.length > 0;
   
-  // Update Header Row
-  tableHeader.innerHTML = `
+  document.getElementById('tableHeader').innerHTML = `
     <th class="py-3 px-2 font-medium">Team</th>
     <th class="py-3 px-2 font-medium">Group</th>
     <th class="py-3 px-2 font-medium text-center">Bug Triage</th>
     <th class="py-3 px-2 font-medium text-center">Manual PRs</th>
-    ${!isFiltered ? '<th class="py-3 px-2 font-medium text-center">Shift Left</th>' : ''}
-    ${!isFiltered ? '<th class="py-3 px-2 font-medium text-center">QA Tools</th>' : ''}
+    ${!isSpecificFilter ? '<th class="py-3 px-2 font-medium text-center">Shift Left</th><th class="py-3 px-2 font-medium text-center">QA Tools</th>' : ''}
   `;
 
-  // Render Rows
-  teamTable.innerHTML = teams.map(t => {
-    const d = dashboardData[t] || { bugTriage: 0, manualPRs: 0, shiftLeft: 0, qaTools: 0 };
-    const cell = (kpi, val) => {
-      const ok = statusFor(kpi, val) === 'on';
-      const color = ok ? 'text-emerald-400' : 'text-amber-400';
-      return `<td class="py-3 px-2 ${color} font-medium text-center">${formatValue(kpi, val)}</td>`;
-    };
+  document.getElementById('teamTable').innerHTML = teams.map(t => {
+    const d = dashboardData[t];
+    const cell = (kpi, val) => `<td class="py-3 px-2 ${statusFor(kpi, val) === 'on' ? 'text-emerald-400' : 'text-amber-400'} text-center">${formatValue(kpi, val)}</td>`;
     return `
       <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
         <td class="py-3 px-2 text-white font-medium">${t}</td>
-        <td class="py-3 px-2 text-slate-400">${teamToGroup[t] || 'N/A'}</td>
+        <td class="py-3 px-2 text-slate-400 text-xs">${teamToGroup[t] || 'N/A'}</td>
         ${cell(kpis[0], d.bugTriage)}
         ${cell(kpis[1], d.manualPRs)}
-        ${!isFiltered ? cell(kpis[2], d.shiftLeft) : ''}
-        ${!isFiltered ? cell(kpis[3], d.qaTools) : ''}
-      </tr>
-    `;
+        ${!isSpecificFilter ? cell(kpis[2], d.shiftLeft) + cell(kpis[3], d.qaTools) : ''}
+      </tr>`;
   }).join('');
 }
 
-function updateHeader() {
-  const g = groupSelect.value, t = teamSelect.value;
-  const teams = getSelectedTeams();
-  const periodLabel = periodSelect.options[periodSelect.selectedIndex].text;
-  scopeBadge.textContent = `${g === 'all' ? 'All Groups' : g} · ${t === 'all' ? 'All Teams' : t} · ${periodLabel}`;
-  teamCount.textContent = `${teams.length} Team${teams.length !== 1 ? 's' : ''}`;
-}
-
-function refresh() { 
-  updateHeader(); 
+function refresh() {
+  const teams = getActiveTeams();
+  document.getElementById('scopeBadge').innerText = `${selectedGroups.length ? selectedGroups.join(', ') : 'All Groups'} · ${selectedTeams.length ? selectedTeams.join(', ') : 'All Teams'}`;
+  document.getElementById('teamCount').innerText = `${teams.length} Teams`;
   renderKPIs(); 
   renderTable(); 
 }
 
-periodSelect.addEventListener('change', fetchCSVData);
-groupSelect.addEventListener('change', () => { updateTeamDropdown(); refresh(); });
-teamSelect.addEventListener('change', refresh);
-
-exportPdfBtn.addEventListener('click', () => {
-  const element = document.getElementById('mainContent');
-  html2pdf().set({
-    margin: 0.3, filename: 'QA-OKR-Report.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, backgroundColor: '#020617' },
-    jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }
-  }).from(element).save();
-});
-
-updateTeamDropdown();
+initMultiSelect('groupBtn', 'groupDropdown', 'groupOptions', groupsData, true);
+initMultiSelect('teamBtn', 'teamDropdown', 'teamOptions', groupsData, false);
+document.getElementById('periodSelect').onchange = fetchCSVData;
 fetchCSVData();
 </script>
 </body>
