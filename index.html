@@ -62,9 +62,8 @@
         </div>
       </div>
     </div>
-
     <div class="mt-auto pt-6 border-t border-slate-800">
-      <button id="exportPdfBtn" class="w-full mb-4 bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-medium text-sm rounded-lg px-3 py-2.5 flex items-center justify-center gap-2">PDF Export</button>
+      <button id="exportPdfBtn" class="w-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-medium text-sm rounded-lg px-3 py-2.5">PDF Export</button>
     </div>
   </aside>
 
@@ -168,7 +167,6 @@ function initMultiSelect(btnId, dropdownId, optionsId, isGroup = true) {
     document.querySelectorAll('.dropdown-content').forEach(d => { if(d !== dropdown) d.classList.remove('show'); });
     dropdown.classList.toggle('show');
   };
-  dropdown.onclick = (e) => e.stopPropagation();
   const items = isGroup ? Object.keys(groupsData) : allTeamsList;
   optionsDiv.innerHTML = items.map(item => `<label class="flex items-center gap-2 p-2 hover:bg-slate-700 rounded cursor-pointer text-sm"><input type="checkbox" value="${item}" class="w-4 h-4 rounded border-slate-600 bg-slate-900 text-cyan-500">${item}</label>`).join('');
   optionsDiv.querySelectorAll('input').forEach(input => {
@@ -224,11 +222,11 @@ async function fetchCSVData() {
 
 function refresh() {
     const activeTeams = selectedTeams.length ? selectedTeams : (selectedGroups.length ? selectedGroups.flatMap(g => groupsData[g]) : allTeamsList);
-    const weeks = parseInt(document.getElementById('periodSelect').value);
+    const weeksCount = parseInt(document.getElementById('periodSelect').value);
     allTeamsList.forEach(t => dashboardData[t] = { bugTriage: 0.0, manualPRs: 0.0, cycleTime: 0.0 });
 
-    const allWeeks = [...new Set([...rawPRData.map(d => d.week), ...rawTriageData.map(d => d.week)])].sort().reverse();
-    const targetWeeks = allWeeks.slice(0, weeks);
+    const allWeeks = [...new Set(rawPRData.map(d => d.week))].sort().reverse();
+    const targetWeeks = allWeeks.slice(0, weeksCount);
 
     activeTeams.forEach(team => {
         const pr = rawPRData.filter(d => d.team === team && targetWeeks.includes(d.week));
@@ -236,31 +234,39 @@ function refresh() {
             const tm = pr.reduce((s,r)=>s+r.manual,0); const tt = pr.reduce((s,r)=>s+r.total,0); 
             dashboardData[team].manualPRs = tt > 0 ? (tm/tt)*100.0 : 0.0; 
             const cyRaw = pr.map(r => r.cycle);
-            // Storing the RAW decimal days
             dashboardData[team].cycleTime = (cycleMode === 'mean' ? getMean(cyRaw) : getMedian(cyRaw)) / 24.0;
         }
         const tr = rawTriageData.filter(d => d.team === team && targetWeeks.includes(d.week));
         if (tr.length > 0) dashboardData[team].bugTriage = tr.reduce((s,r)=>s+r.hours,0.0) / tr.length;
     });
 
-    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - (weeks * 7));
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - (weeksCount * 7));
     const shiftVal = rawShiftData.filter(i => i.date >= cutoff).length;
     const qaRows = rawQAData.filter(d => targetWeeks.includes(d.week));
     const qaVal = qaRows.length ? (qaRows.reduce((s,i)=>s+i.visits, 0) / qaRows.length) : 0.0;
 
-    // Header logic
-    const gSel = selectedGroups.length <= 3 ? selectedGroups.join(', ') : `${selectedGroups.slice(0,2).join(', ')} + ${selectedGroups.length-2} more`;
-    const tSel = selectedTeams.length <= 3 ? selectedTeams.join(', ') : `${selectedTeams.slice(0,2).join(', ')} + ${selectedTeams.length-2} more`;
-    document.getElementById('scopeBadge').innerText = `${selectedGroups.length?gSel:"All Groups"} · ${selectedTeams.length?tSel:"All Teams"} · ${weeks} Weeks`;
     document.getElementById('teamCount').innerText = `${activeTeams.length} Teams`;
-
     renderKPIs(activeTeams, (shiftVal>0?shiftVal-1:0), qaVal); 
     renderTable(activeTeams); 
     updateCharts(activeTeams, targetWeeks);
 }
 
 function aggregate(teams, kpi) {
-  // Force parseFloat to prevent integer coercion
+  // CRITICAL FIX: Cycle Time uses RAW POOLED PRs instead of "Average of Averages"
+  if (kpi.key === 'cycleTime') {
+    const weeksCount = parseInt(document.getElementById('periodSelect').value);
+    const allWeeks = [...new Set(rawPRData.map(d => d.week))].sort().reverse();
+    const targetWeeks = allWeeks.slice(0, weeksCount);
+
+    const pooledCycleHours = rawPRData
+      .filter(d => teams.includes(d.team) && targetWeeks.includes(d.week))
+      .map(d => d.cycle);
+
+    if (pooledCycleHours.length === 0) return 0.0;
+    const resultHours = (cycleMode === 'mean') ? getMean(pooledCycleHours) : getMedian(pooledCycleHours);
+    return resultHours / 24.0;
+  }
+
   const sum = teams.reduce((acc, t) => acc + (dashboardData[t] ? parseFloat(dashboardData[t][kpi.key]) : 0.0), 0.0);
   return kpi.agg === 'sum' ? sum : (teams.length ? sum / teams.length : 0.0);
 }
@@ -319,7 +325,7 @@ function updateCharts(activeTeams, targetWeeks) {
         const tm = pRows.reduce((s,r)=>s+r.manual,0), tt = pRows.reduce((s,r)=>s+r.total,0);
         man.push(tt > 0 ? (tm/tt)*100.0 : null);
         const cVal = pRows.map(r => r.cycle);
-        cyc.push(cVal.length ? (cycleMode==='mean'?getMean(cVal):getMedian(cVal))/24.0 : null);
+        cyc.push(cVal.length ? (cycleMode === 'mean' ? getMean(cVal) : getMedian(cVal))/24.0 : null);
     });
     const cfg = (title, max) => ({ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }, y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' }, title: { display: true, text: title, color: '#64748b' }, min: 0, max: max } } });
     if (triageChart) triageChart.destroy(); triageChart = new Chart(document.getElementById('triageChart'), { type: 'line', data: { labels: chrono, datasets: [{ data: tri, borderColor: '#06b6d4', borderWidth: 2, tension: 0.3 }] }, options: cfg('Hours', 100) });
