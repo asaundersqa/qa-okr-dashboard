@@ -137,7 +137,7 @@ Object.entries(groupsData).forEach(([g, ts]) => ts.forEach(t => teamToGroup[t] =
 const kpis = [
   { key: 'bugTriage', name: 'Bug Triage', unit: 'h', goal: 72, type: 'lower', agg: 'avg', desc: 'Avg time to triage' },
   { key: 'manualPRs', name: 'Manual PRs', unit: '%', goal: 20, type: 'lower', agg: 'avg', desc: 'Manually tested PRs' },
-  { key: 'shiftLeft', name: 'Shift Left', unit: '', goal: 100, type: 'higher', agg: 'sum', desc: 'Total logs (Rows - 1)' },
+  { key: 'shiftLeft', name: 'Shift Left', unit: '', goal: 100, type: 'higher', agg: 'sum', desc: 'Running Total (All Data)' },
   { key: 'qaTools', name: 'QA Tools', unit: '', goal: 14, type: 'higher', agg: 'sum', desc: 'Total Adoptions' }
 ];
 
@@ -226,11 +226,8 @@ async function fetchCSVData() {
         }
         if (resSh.ok) {
             const rows = (await resSh.text()).split('\n').filter(r => r.trim() !== '');
-            rawShiftData = rows.slice(1).map(r => {
-                const c = r.split(',').map(v => v.trim());
-                const [m, d, y] = c[1].split('/');
-                return { date: new Date(y, m - 1, d) };
-            });
+            // We only need to count total rows for Shift Left
+            rawShiftData = rows.slice(1); 
         }
         refresh();
     } catch (e) { console.error(e); }
@@ -257,11 +254,9 @@ function refresh() {
         if (trRows.length > 0) dashboardData[team].bugTriage = trRows.reduce((s, r) => s + r.hours, 0) / trRows.length;
     });
 
-    // Calculate Global Shift Left
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - (weeksToLookBack * 7));
-    const currentShiftLogs = rawShiftData.filter(item => item.date >= cutoff).length;
-    const shiftLeftValue = currentShiftLogs > 0 ? currentShiftLogs - 1 : 0;
+    // FIXED LOGIC: Shift Left is a Running Total (Total Rows - 1)
+    // It does NOT care about the weeksToLookBack filter.
+    const shiftLeftValue = rawShiftData.length; // Length is already rows - header
 
     // Update UI
     document.getElementById('scopeBadge').innerText = `${selectedGroups.length ? selectedGroups.join(', ') : 'All Groups'} · ${selectedTeams.length ? selectedTeams.length + ' Teams' : 'All Teams'}`;
