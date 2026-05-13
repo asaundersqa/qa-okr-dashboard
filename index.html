@@ -21,7 +21,6 @@
 <body class="bg-slate-950 text-slate-200 min-h-screen">
 
 <div class="flex min-h-screen">
-
   <aside class="w-72 bg-slate-900 border-r border-slate-800 p-6 flex flex-col no-print z-50">
     <div class="flex items-center gap-3 mb-10">
       <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl">Q</div>
@@ -43,7 +42,7 @@
 
       <div class="relative z-[60]">
         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Groups</label>
-        <button id="groupBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center hover:border-slate-600 transition-colors">
+        <button id="groupBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center hover:border-slate-600">
           <span id="groupBtnText">All Groups</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
         </button>
@@ -54,7 +53,7 @@
 
       <div class="relative z-[55]">
         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Teams</label>
-        <button id="teamBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center hover:border-slate-600 transition-colors">
+        <button id="teamBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center hover:border-slate-600">
           <span id="teamBtnText">All Teams</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
         </button>
@@ -65,13 +64,7 @@
     </div>
 
     <div class="mt-auto pt-6 border-t border-slate-800">
-      <button id="exportPdfBtn" class="w-full mb-4 bg-gradient-to-br from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-medium text-sm rounded-lg px-3 py-2.5 flex items-center justify-center gap-2">
-        PDF Export
-      </button>
-      <div class="text-xs text-slate-500">
-        <p class="flex items-center gap-2"><span class="w-2 h-2 bg-emerald-500 rounded-full"></span>System operational</p>
-        <p class="mt-2">Q4 2026 · Snapshot</p>
-      </div>
+      <button id="exportPdfBtn" class="w-full mb-4 bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-medium text-sm rounded-lg px-3 py-2.5 flex items-center justify-center gap-2">PDF Export</button>
     </div>
   </aside>
 
@@ -90,15 +83,15 @@
     <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-6 mb-10" id="kpiGrid"></div>
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 transition-all hover:border-slate-700">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-6">Bug Triage Average (Hours)</h3>
         <div class="h-64 w-full"><canvas id="triageChart"></canvas></div>
       </div>
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 transition-all hover:border-slate-700">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-6">Manual PR Testing (%)</h3>
         <div class="h-64 w-full"><canvas id="manualChart"></canvas></div>
       </div>
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 transition-all hover:border-slate-700">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-6">Cycle Time Trend (Days)</h3>
         <div class="h-64 w-full"><canvas id="cycleChart"></canvas></div>
       </div>
@@ -139,7 +132,6 @@ const kpis = [
   { key: 'qaTools', name: 'QA Tools WAU', unit: '', goal: 24, type: 'higher', agg: 'avg' }
 ];
 
-// --- HELPERS ---
 const getMean = (arr) => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
 const getMedian = (arr) => {
   if (!arr.length) return 0;
@@ -148,7 +140,6 @@ const getMedian = (arr) => {
   return s.length % 2 !== 0 ? s[mid] : (s[mid-1]+s[mid])/2;
 };
 
-// --- URL LOGIC ---
 function updateURL() {
   const p = new URLSearchParams();
   p.set('period', document.getElementById('periodSelect').value);
@@ -168,7 +159,6 @@ function loadFiltersFromURL() {
   updateButtonText();
 }
 
-// --- MULTI-SELECT ---
 function initMultiSelect(btnId, dropdownId, optionsId, isGroup = true) {
   const btn = document.getElementById(btnId);
   const dropdown = document.getElementById(dropdownId);
@@ -204,7 +194,6 @@ function updateButtonText() {
 
 window.onclick = () => document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
 
-// --- FETCH & REFRESH ---
 async function fetchCSVData() {
     try {
         const [resPR, resTr, resSh, resQA] = await Promise.all([
@@ -214,12 +203,12 @@ async function fetchCSVData() {
             const r = (await resPR.text()).split('\n').filter(l => l.trim() !== '');
             rawPRData = r.slice(1).map(l => { 
                 const c = l.split(',').map(v => v.trim()); 
-                return { week: c[0], team: c[1], manual: parseInt(c[2])||0, total: parseInt(c[3])||0, cycle: parseFloat(c[4])||0 }; 
+                return { week: c[0], team: c[1], manual: parseInt(c[2])||0, total: parseInt(c[3])||0, cycle: parseFloat(c[4])||0.0 }; 
             });
         }
         if (resTr.ok) {
             const r = (await resTr.text()).split('\n').filter(l => l.trim() !== '');
-            rawTriageData = r.slice(1).map(l => { const c = l.split(',').map(v => v.trim()); return { week: c[0], team: c[1], hours: parseFloat(c[2])||0 }; });
+            rawTriageData = r.slice(1).map(l => { const c = l.split(',').map(v => v.trim()); return { week: c[0], team: c[1], hours: parseFloat(c[2])||0.0 }; });
         }
         if (resSh.ok) {
             const r = (await resSh.text()).split('\n').filter(l => l.trim() !== '');
@@ -236,7 +225,7 @@ async function fetchCSVData() {
 function refresh() {
     const activeTeams = selectedTeams.length ? selectedTeams : (selectedGroups.length ? selectedGroups.flatMap(g => groupsData[g]) : allTeamsList);
     const weeks = parseInt(document.getElementById('periodSelect').value);
-    allTeamsList.forEach(t => dashboardData[t] = { bugTriage: 0, manualPRs: 0, cycleTime: 0 });
+    allTeamsList.forEach(t => dashboardData[t] = { bugTriage: 0.0, manualPRs: 0.0, cycleTime: 0.0 });
 
     const allWeeks = [...new Set([...rawPRData.map(d => d.week), ...rawTriageData.map(d => d.week)])].sort().reverse();
     const targetWeeks = allWeeks.slice(0, weeks);
@@ -245,28 +234,44 @@ function refresh() {
         const pr = rawPRData.filter(d => d.team === team && targetWeeks.includes(d.week));
         if (pr.length > 0) { 
             const tm = pr.reduce((s,r)=>s+r.manual,0); const tt = pr.reduce((s,r)=>s+r.total,0); 
-            dashboardData[team].manualPRs = tt > 0 ? (tm/tt)*100 : 0; 
-            const cy = pr.map(r => r.cycle);
-            dashboardData[team].cycleTime = (cycleMode === 'mean' ? getMean(cy) : getMedian(cy)) / 24;
+            dashboardData[team].manualPRs = tt > 0 ? (tm/tt)*100.0 : 0.0; 
+            const cyRaw = pr.map(r => r.cycle);
+            // Storing the RAW decimal days
+            dashboardData[team].cycleTime = (cycleMode === 'mean' ? getMean(cyRaw) : getMedian(cyRaw)) / 24.0;
         }
         const tr = rawTriageData.filter(d => d.team === team && targetWeeks.includes(d.week));
-        if (tr.length > 0) dashboardData[team].bugTriage = tr.reduce((s,r)=>s+r.hours,0) / tr.length;
+        if (tr.length > 0) dashboardData[team].bugTriage = tr.reduce((s,r)=>s+r.hours,0.0) / tr.length;
     });
 
     const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - (weeks * 7));
     const shiftVal = rawShiftData.filter(i => i.date >= cutoff).length;
     const qaRows = rawQAData.filter(d => targetWeeks.includes(d.week));
-    const qaVal = qaRows.length ? (qaRows.reduce((s,i)=>s+i.visits, 0) / qaRows.length) : 0;
+    const qaVal = qaRows.length ? (qaRows.reduce((s,i)=>s+i.visits, 0) / qaRows.length) : 0.0;
 
+    // Header logic
     const gSel = selectedGroups.length <= 3 ? selectedGroups.join(', ') : `${selectedGroups.slice(0,2).join(', ')} + ${selectedGroups.length-2} more`;
     const tSel = selectedTeams.length <= 3 ? selectedTeams.join(', ') : `${selectedTeams.slice(0,2).join(', ')} + ${selectedTeams.length-2} more`;
-    const periodLabel = document.getElementById('periodSelect').options[document.getElementById('periodSelect').selectedIndex].text;
-    document.getElementById('scopeBadge').innerText = `${selectedGroups.length?gSel:"All Groups"} · ${selectedTeams.length?tSel:"All Teams"} · ${periodLabel}`;
+    document.getElementById('scopeBadge').innerText = `${selectedGroups.length?gSel:"All Groups"} · ${selectedTeams.length?tSel:"All Teams"} · ${weeks} Weeks`;
     document.getElementById('teamCount').innerText = `${activeTeams.length} Teams`;
 
     renderKPIs(activeTeams, (shiftVal>0?shiftVal-1:0), qaVal); 
     renderTable(activeTeams); 
     updateCharts(activeTeams, targetWeeks);
+}
+
+function aggregate(teams, kpi) {
+  // Force parseFloat to prevent integer coercion
+  const sum = teams.reduce((acc, t) => acc + (dashboardData[t] ? parseFloat(dashboardData[t][kpi.key]) : 0.0), 0.0);
+  return kpi.agg === 'sum' ? sum : (teams.length ? sum / teams.length : 0.0);
+}
+
+function statusFor(kpi, value) { return kpi.type === 'lower' ? (value <= kpi.goal ? 'on' : 'risk') : (value >= kpi.goal ? 'on' : 'risk'); }
+function progressPct(kpi, value) { if (kpi.type === 'lower') return value === 0 ? 100 : Math.max(0, Math.min(100, (kpi.goal / value) * 100)); return Math.max(0, Math.min(100, (value / kpi.goal) * 100)); }
+
+function formatValue(kpi, value) {
+  const num = parseFloat(value);
+  if (kpi.unit === 'd') return num.toFixed(1) + 'd';
+  return (Number.isInteger(num) ? num : num.toFixed(1)) + kpi.unit;
 }
 
 function renderKPIs(teams, shiftVal, qaVal) {
@@ -312,29 +317,16 @@ function updateCharts(activeTeams, targetWeeks) {
         tri.push(tRows.length ? getMean(tRows.map(d=>d.hours)) : null);
         const pRows = rawPRData.filter(d => activeTeams.includes(d.team) && d.week === w);
         const tm = pRows.reduce((s,r)=>s+r.manual,0), tt = pRows.reduce((s,r)=>s+r.total,0);
-        man.push(tt > 0 ? (tm/tt)*100 : null);
+        man.push(tt > 0 ? (tm/tt)*100.0 : null);
         const cVal = pRows.map(r => r.cycle);
-        cyc.push(cVal.length ? (cycleMode==='mean'?getMean(cVal):getMedian(cVal))/24 : null);
+        cyc.push(cVal.length ? (cycleMode==='mean'?getMean(cVal):getMedian(cVal))/24.0 : null);
     });
     const cfg = (title, max) => ({ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }, y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' }, title: { display: true, text: title, color: '#64748b' }, min: 0, max: max } } });
     if (triageChart) triageChart.destroy(); triageChart = new Chart(document.getElementById('triageChart'), { type: 'line', data: { labels: chrono, datasets: [{ data: tri, borderColor: '#06b6d4', borderWidth: 2, tension: 0.3 }] }, options: cfg('Hours', 100) });
     if (manualChart) manualChart.destroy(); manualChart = new Chart(document.getElementById('manualChart'), { type: 'line', data: { labels: chrono, datasets: [{ data: man, borderColor: '#10b981', borderWidth: 2, tension: 0.3 }] }, options: cfg('%', 100) });
-    if (cycleChart) cycleChart.destroy(); cycleChart = new Chart(document.getElementById('cycleChart'), { type: 'line', data: { labels: chrono, datasets: [{ data: cyc, borderColor: '#8b5cf6', borderWidth: 2, tension: 0.3 }] }, options: cfg('Days', 7) });
+    if (cycleChart) cycleChart.destroy(); cycleChart = new Chart(document.getElementById('cycleChart'), { type: 'line', data: { labels: chrono, datasets: [{ data: cyc, borderColor: '#8b5cf6', borderWidth: 2, tension: 0.3 }] }, options: cfg('Days', 5) });
 }
 
-function aggregate(teams, kpi) { const sum = teams.reduce((acc, t) => acc + (dashboardData[t] ? dashboardData[t][kpi.key] : 0), 0); return kpi.agg === 'sum' ? sum : (teams.length ? sum / teams.length : 0); }
-function statusFor(kpi, value) { return kpi.type === 'lower' ? (value <= kpi.goal ? 'on' : 'risk') : (value >= kpi.goal ? 'on' : 'risk'); }
-function progressPct(kpi, value) { if (kpi.type === 'lower') return value === 0 ? 100 : Math.max(0, Math.min(100, (kpi.goal / value) * 100)); return Math.max(0, Math.min(100, (value / kpi.goal) * 100)); }
-function formatValue(kpi, value) {
-  // If the metric is Cycle Time (unit 'd'), always show 1 decimal point
-  if (kpi.unit === 'd') {
-    return `${value.toFixed(1)}${kpi.unit}`;
-  }
-  // For other metrics, show decimals only if the number isn't a whole integer
-  return `${Number.isInteger(value) ? value : value.toFixed(1)}${kpi.unit}`;
-}
-
-// --- INIT ---
 initMultiSelect('groupBtn', 'groupDropdown', 'groupOptions', true);
 initMultiSelect('teamBtn', 'teamDropdown', 'teamOptions', false);
 document.getElementById('periodSelect').onchange = () => { updateURL(); fetchCSVData(); };
