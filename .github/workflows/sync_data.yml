@@ -42,7 +42,7 @@ jobs:
               SHEETS = {
                   'manual_prs.csv': {
                       'id': '1x5C-L1rMF94EdWPNZNzPHkxiENil8ZcOywiWAcVYjFQ',
-                      'range': 'A:E'
+                      'range': 'A:F'
                   },
                   'bug_triage.csv': {
                       'id': '1EhoGAzeLDdD0tCXXtBTUWp1i52cUyuUqrJEpNYueZbM',
