@@ -33,9 +33,9 @@
       <div>
         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Time Period</label>
         <select id="periodSelect" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
-          <option value="2w">2 Weeks</option>
-          <option value="8w" selected>8 Weeks</option>
-          <option value="12w">12 Weeks</option>
+          <option value="2">2 Weeks</option>
+          <option value="8" selected>8 Weeks</option>
+          <option value="12">12 Weeks</option>
         </select>
       </div>
 
@@ -131,22 +131,9 @@ const groups = {
   "Accelerator Platform": ["Accelerator Platform 1", "Accelerator Platform 2"]
 };
 
-// Simplified base data structure for all teams
-const baseData = { bugTriage: 0, manualPRs: 0, shiftLeft: 0, qaTools: 0 };
+// State for data
+let dashboardData = {}; 
 const allTeamsList = Object.values(groups).flat();
-
-const generateBlankData = () => {
-    let obj = {};
-    allTeamsList.forEach(team => { obj[team] = { ...baseData }; });
-    return obj;
-};
-
-const dataByPeriod = {
-  "2w": generateBlankData(),
-  "8w": generateBlankData(),
-  "12w": generateBlankData()
-};
-
 const teamToGroup = {};
 Object.entries(groups).forEach(([g, ts]) => ts.forEach(t => teamToGroup[t] = g));
 
@@ -166,7 +153,47 @@ const teamCount = document.getElementById('teamCount');
 const teamTable = document.getElementById('teamTable');
 const exportPdfBtn = document.getElementById('exportPdfBtn');
 
-function getData() { return dataByPeriod[periodSelect.value]; }
+// FETCH AND PARSE CSV
+async function fetchCSVData() {
+    try {
+        const response = await fetch('manual_prs.csv');
+        const text = await response.text();
+        const rows = text.split('\n').filter(r => r.trim() !== '');
+        const headers = rows[0].split(',');
+        
+        // Group data by Team and calculate averages per period
+        const rawData = rows.slice(1).map(row => {
+            const cols = row.split(',');
+            return {
+                week: cols[0],
+                team: cols[1],
+                manual: parseInt(cols[2]),
+                total: parseInt(cols[3])
+            };
+        });
+
+        // Initialize dashboardData with zeros
+        dashboardData = {};
+        allTeamsList.forEach(t => dashboardData[t] = { bugTriage: 0, manualPRs: 0, shiftLeft: 0, qaTools: 0 });
+
+        const weeksToLookBack = parseInt(periodSelect.value);
+        const uniqueWeeks = [...new Set(rawData.map(d => d.week))].sort().reverse();
+        const targetWeeks = uniqueWeeks.slice(0, weeksToLookBack);
+
+        allTeamsList.forEach(team => {
+            const teamRows = rawData.filter(d => d.team === team && targetWeeks.includes(d.week));
+            if (teamRows.length > 0) {
+                const totalManual = teamRows.reduce((sum, r) => sum + r.manual, 0);
+                const totalPRs = teamRows.reduce((sum, r) => sum + r.total, 0);
+                dashboardData[team].manualPRs = totalPRs > 0 ? (totalManual / totalPRs) * 100 : 0;
+            }
+        });
+
+        refresh();
+    } catch (e) {
+        console.error("CSV Load Error:", e);
+    }
+}
 
 function updateTeamDropdown() {
   const g = groupSelect.value;
@@ -187,8 +214,7 @@ function getSelectedTeams() {
 }
 
 function aggregate(teams, kpi) {
-  const data = getData();
-  const sum = teams.reduce((acc, t) => acc + (data[t] ? data[t][kpi.key] : 0), 0);
+  const sum = teams.reduce((acc, t) => acc + (dashboardData[t] ? dashboardData[t][kpi.key] : 0), 0);
   return kpi.agg === 'sum' ? sum : (teams.length ? sum / teams.length : 0);
 }
 
@@ -222,80 +248,4 @@ function renderKPIs() {
       ? '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20"><span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>On Track</span>'
       : '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-medium border border-amber-500/20"><span class="w-1.5 h-1.5 bg-amber-400 rounded-full"></span>At Risk</span>';
     
-    const barColor = onTrack ? 'bg-gradient-to-r from-emerald-500 to-cyan-500' : 'bg-gradient-to-r from-amber-500 to-orange-500';
-    const goalText = kpi.type === 'lower' ? `< ${kpi.goal}${kpi.unit}` : `${kpi.goal}${kpi.unit}`;
-
-    kpiGrid.innerHTML += `
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-slate-700 transition-colors">
-        <div class="flex justify-between items-start mb-4">
-          <div>
-            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">${kpi.name}</p>
-            <p class="text-xs text-slate-600 mt-0.5">${kpi.desc}</p>
-          </div>
-          ${badge}
-        </div>
-        <div class="flex items-baseline gap-2 mb-4">
-          <span class="text-4xl font-bold text-white">${formatValue(kpi, value)}</span>
-          <span class="text-xs text-slate-500">/ goal ${goalText}</span>
-        </div>
-        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-          <div class="progress-bar h-full ${barColor} rounded-full" style="width: ${pct}%"></div>
-        </div>
-        <p class="text-xs text-slate-500 mt-2">${pct.toFixed(0)}% of target</p>
-      </div>
-    `;
-  });
-}
-
-function renderTable() {
-  const teams = getSelectedTeams();
-  const data = getData();
-  teamTable.innerHTML = teams.map(t => {
-    const d = data[t] || baseData;
-    const cell = (kpi, val) => {
-      const ok = statusFor(kpi, val) === 'on';
-      const color = ok ? 'text-emerald-400' : 'text-amber-400';
-      return `<td class="py-3 px-2 ${color} font-medium text-center">${val}${kpi.unit}</td>`;
-    };
-    return `
-      <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
-        <td class="py-3 px-2 text-white font-medium">${t}</td>
-        <td class="py-3 px-2 text-slate-400">${teamToGroup[t] || 'N/A'}</td>
-        ${cell(kpis[0], d.bugTriage)}
-        ${cell(kpis[1], d.manualPRs)}
-        ${cell(kpis[2], d.shiftLeft)}
-        ${cell(kpis[3], d.qaTools)}
-      </tr>
-    `;
-  }).join('');
-}
-
-function updateHeader() {
-  const g = groupSelect.value, t = teamSelect.value;
-  const teams = getSelectedTeams();
-  const periodLabel = { '2w': '2 Weeks', '8w': '8 Weeks', '12w': '12 Weeks' }[periodSelect.value];
-  scopeBadge.textContent = `${g === 'all' ? 'All Groups' : g} · ${t === 'all' ? 'All Teams' : t} · ${periodLabel}`;
-  teamCount.textContent = `${teams.length} Team${teams.length !== 1 ? 's' : ''}`;
-}
-
-function refresh() { updateHeader(); renderKPIs(); renderTable(); }
-
-periodSelect.addEventListener('change', refresh);
-groupSelect.addEventListener('change', () => { updateTeamDropdown(); refresh(); });
-teamSelect.addEventListener('change', refresh);
-
-exportPdfBtn.addEventListener('click', () => {
-  const element = document.getElementById('mainContent');
-  html2pdf().set({
-    margin: 0.3, filename: 'QA-OKR-Report.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, backgroundColor: '#020617' },
-    jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }
-  }).from(element).save();
-});
-
-updateTeamDropdown();
-refresh();
-</script>
-</body>
-</html>
+    const barColor = onTrack ? 'bg-gradient-to-r from-emerald-500 to-cyan-500' : 'bg-gradient-
