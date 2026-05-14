@@ -107,7 +107,23 @@
 
 <script>
 const groupsData = {
-  "Data Consistency": ["DC1", "DC2", "DC3"], "AI": ["AI1", "AI2", "AI3", "AI4", "AI5", "AI6"], "Process": ["Process 1", "Process 2", "Process 3", "Enterprise Architecture"], "Project Spillover": ["Intelligent Feature Adoption", "License Request/Grants", "New Enterprise User"], "Growth": ["Growth"], "Planning": ["Planning 1", "Planning 2"], "Cloud": ["Cloud 1", "Cloud 2"], "Intelligent Interface": ["Intelligent Interface 1", "Intelligent Interface 2", "Intelligent Interface 3", "Intelligent Interface 4", "UFO"], "Core": ["Papercuts", "Core Support", "Change Management", "Templates"], "Accelerator Platform": ["Accelerator Platform 1", "Accelerator Platform 2"]
+  "AI": ["AI1", "AI2", "AI3", "AI4", "AI5", "AI6", "Software Engineer/IT Persona", "Process Surface and Gather", "AI Can do Everything in Lucid"],
+  "Accelerator Platform": ["Accelerator Platform 1", "Accelerator Platform 2"],
+  "airfocus": ["airfocus 1", "airfocus 2", "airfocus 3"],
+  "Billing & Payments": ["Billing & Payments 3", "Billing & Payments IV"],
+  "Business Tools": ["Business Tools 1", "Business Tools Penta"],
+  "Cloud": ["Cloud 1", "Cloud 2"],
+  "Core": ["Papercuts", "Core Support", "Change Management", "Templates"],
+  "Data Consistency": ["DC1", "DC2", "DC3"],
+  "Dev Platform": ["Dev Platform 1", "Dev Platform 2", "Dev Platform 3", "Dev Platform 4"],
+  "Enterprise": ["Enterprise 1", "Enterprise 2", "Enterprise 3", "Search"],
+  "Growth": ["Growth"],
+  "Intelligent Interface": ["Intelligent Interface 1", "Intelligent Interface 2", "Intelligent Interface 3", "Intelligent Interface 4", "UFO"],
+  "Marketing FEE": ["Marketing FEE"],
+  "Performance": ["Performance 1", "Performance 2"],
+  "Planning": ["Planning 1", "Planning 2"],
+  "Process": ["Process 1", "Process 2", "Process 3", "Enterprise Architecture"],
+  "Project Spillover": ["Intelligent Feature Adoption", "License Request/Grants", "New Enterprise User"]
 };
 
 let rawPRData = [], rawTriageData = [], rawShiftData = [], rawQAData = [];
@@ -160,6 +176,7 @@ async function fetchCSVData() {
             const r = (await resQ.text()).split('\n').filter(l => l.trim().length > 5);
             rawQAData = r.slice(1).map(l => { const c = l.split(','); return { week: c[0], visits: parseFloat(c[1])||0 }; });
         }
+
         loadFiltersFromURL();
         refresh();
     } catch (e) { console.error("Error fetching data:", e); }
@@ -180,11 +197,8 @@ function refresh() {
 
 function renderKPIs(teams, weeks) {
     const isFiltered = selectedTeams.length > 0 || selectedGroups.length > 0;
-    const grid = document.getElementById('kpiGrid'); 
-    grid.innerHTML = '';
-    
+    const grid = document.getElementById('kpiGrid'); grid.innerHTML = '';
     kpis.forEach(kpi => {
-        // HIDE Shift Left and QA Tools if filtered
         if (isFiltered && (kpi.key === 'shiftLeft' || kpi.key === 'qaTools')) return;
 
         let val = 0;
@@ -226,7 +240,6 @@ function renderKPIs(teams, weeks) {
 }
 
 function renderTable(teams, weeks) {
-    const isFiltered = selectedTeams.length > 0 || selectedGroups.length > 0;
     document.getElementById('tableHeader').innerHTML = `<th class="py-3">Team</th><th class="text-center">Triage</th><th class="text-center">Manual %</th><th class="text-center">Cycle (d)</th>`;
     document.getElementById('teamTable').innerHTML = teams.map(t => {
         const tr = rawTriageData.filter(d => d.team === t && weeks.includes(d.week)).map(d => d.hours);
