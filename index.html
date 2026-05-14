@@ -15,25 +15,22 @@
   .toggle-active { background: #06b6d4; color: white; }
   .custom-scrollbar::-webkit-scrollbar { width: 4px; }
   .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+  @media print { .no-print { display: none; } }
 </style>
 </head>
 <body class="text-slate-200 min-h-screen">
 
 <div class="flex min-h-screen">
-  <aside class="w-72 bg-slate-900 border-r border-slate-800 p-6 flex flex-col no-print">
+  <aside class="w-72 bg-slate-900 border-r border-slate-800 p-6 flex flex-col no-print z-50">
     <div class="flex items-center gap-3 mb-10">
       <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl">Q</div>
       <h1 class="text-white font-bold text-lg">QA Command</h1>
     </div>
 
     <div class="space-y-6">
-      <div id="debugStatus" class="p-3 bg-slate-800 rounded border border-cyan-500/30 text-[10px] font-mono text-cyan-400 mb-4">
-        Initializing...
-      </div>
-
       <div>
         <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Time Period</label>
-        <select id="periodSelect" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+        <select id="periodSelect" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500">
           <option value="2">2 Weeks</option>
           <option value="8" selected>8 Weeks</option>
           <option value="12">12 Weeks</option>
@@ -42,7 +39,7 @@
 
       <div class="relative">
         <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Groups</label>
-        <button id="groupBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center">
+        <button id="groupBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center hover:border-slate-600 transition-colors">
           <span id="groupBtnText">All Groups</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
         </button>
@@ -53,7 +50,7 @@
 
       <div class="relative">
         <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Teams</label>
-        <button id="teamBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center">
+        <button id="teamBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center hover:border-slate-600 transition-colors">
           <span id="teamBtnText">All Teams</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
         </button>
@@ -61,6 +58,10 @@
            <div id="teamOptions"></div>
         </div>
       </div>
+    </div>
+
+    <div class="mt-auto pt-6 border-t border-slate-800">
+      <button id="exportPdfBtn" class="w-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-medium text-sm rounded-lg px-3 py-2.5 hover:opacity-90 transition-opacity">PDF Export</button>
     </div>
   </aside>
 
@@ -71,6 +72,7 @@
         <h2 class="text-3xl font-bold text-white">OKR Command Center</h2>
       </div>
       <div class="text-right">
+        <p class="text-xs text-slate-500 uppercase tracking-wider">Aggregated</p>
         <p class="text-2xl font-bold text-white" id="teamCount">-- Teams</p>
       </div>
     </header>
@@ -78,24 +80,34 @@
     <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-6 mb-10" id="kpiGrid"></div>
 
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 transition-all hover:border-slate-700">
         <h3 class="text-sm font-semibold uppercase text-slate-400 mb-6">Bug Triage Trend (Hours)</h3>
         <div class="h-64 w-full"><canvas id="triageChart"></canvas></div>
       </div>
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 transition-all hover:border-slate-700">
         <h3 class="text-sm font-semibold uppercase text-slate-400 mb-6">Manual PR Testing (%)</h3>
         <div class="h-64 w-full"><canvas id="manualChart"></canvas></div>
       </div>
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 transition-all hover:border-slate-700">
         <h3 class="text-sm font-semibold uppercase text-slate-400 mb-6">Cycle Time Trend (Days)</h3>
         <div class="h-64 w-full"><canvas id="cycleChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+      <h3 class="text-sm font-semibold uppercase text-slate-400 mb-4">Team Breakdown</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr id="tableHeader" class="text-left text-slate-500 border-b border-slate-800"></tr></thead>
+          <tbody id="teamTable"></tbody>
+        </table>
       </div>
     </div>
   </main>
 </div>
 
 <script>
-// CONFIG
+// CONFIG & STATE
 const groupsData = {
   "Data Consistency": ["DC1", "DC2", "DC3"], "AI": ["AI1", "AI2", "AI3", "AI4", "AI5", "AI6"], "Process": ["Process 1", "Process 2", "Process 3", "Enterprise Architecture"], "Project Spillover": ["Intelligent Feature Adoption", "License Request/Grants", "New Enterprise User"], "Growth": ["Growth"], "Planning": ["Planning 1", "Planning 2"], "Cloud": ["Cloud 1", "Cloud 2"], "Intelligent Interface": ["Intelligent Interface 1", "Intelligent Interface 2", "Intelligent Interface 3", "Intelligent Interface 4", "UFO"], "Core": ["Papercuts", "Core Support", "Change Management", "Templates"], "Accelerator Platform": ["Accelerator Platform 1", "Accelerator Platform 2"]
 };
@@ -122,40 +134,38 @@ const getMedian = (arr) => {
   return s.length % 2 !== 0 ? s[mid] : (s[mid-1]+s[mid])/2.0;
 };
 
+// DATA FETCHING
 async function fetchCSVData() {
-    const debug = document.getElementById('debugStatus');
     try {
         const bust = new Date().getTime();
-        const resPR = await fetch(`manual_prs.csv?v=${bust}`);
+        const [resPR, resT, resS, resQ] = await Promise.all([
+            fetch(`manual_prs.csv?v=${bust}`),
+            fetch(`bug_triage.csv?v=${bust}`),
+            fetch(`shift_left.csv?v=${bust}`),
+            fetch(`qa_tools.csv?v=${bust}`)
+        ]);
         
         if (resPR.ok) {
             const text = await resPR.text();
             const rows = text.split('\n').filter(l => l.trim().length > 5);
             rawPRData = rows.slice(1).map(l => { 
                 const c = l.split(',').map(v => v.trim()); 
-                // index 5 is CycleTimeHours based on your CSV structure
                 return { 
-                    week: c[0], 
-                    team: c[1], 
-                    manual: parseFloat(c[2])||0, 
-                    total: parseFloat(c[3])||0, 
+                    week: c[0], team: c[1], 
+                    manual: parseFloat(c[2])||0, total: parseFloat(c[3])||0, 
                     cycle: parseFloat(c[5])||0 
                 }; 
             });
-            debug.innerHTML = `Data Loaded.<br>Col 6 (Cycle): ${rawPRData[0].cycle}h<br>Expected: ${(rawPRData[0].cycle/24).toFixed(1)}d`;
         }
         
-        const resT = await fetch(`bug_triage.csv?v=${bust}`);
         if(resT.ok) {
             const r = (await resT.text()).split('\n').filter(l => l.trim().length > 5);
             rawTriageData = r.slice(1).map(l => { const c = l.split(','); return { week: c[0], team: c[1], hours: parseFloat(c[2])||0 }; });
         }
-        const resS = await fetch(`shift_left.csv?v=${bust}`);
         if(resS.ok) {
             const r = (await resS.text()).split('\n').filter(l => l.trim().length > 5);
             rawShiftData = r.slice(1).map(l => { const c = l.split(','); const p = c[1].split('/'); return { date: new Date(p[2], p[0]-1, p[1]) }; });
         }
-        const resQ = await fetch(`qa_tools.csv?v=${bust}`);
         if(resQ.ok) {
             const r = (await resQ.text()).split('\n').filter(l => l.trim().length > 5);
             rawQAData = r.slice(1).map(l => { const c = l.split(','); return { week: c[0], visits: parseFloat(c[1])||0 }; });
@@ -163,7 +173,7 @@ async function fetchCSVData() {
 
         loadFiltersFromURL();
         refresh();
-    } catch (e) { debug.innerHTML = "Error: " + e.message; }
+    } catch (e) { console.error("Data error:", e); }
 }
 
 function refresh() {
@@ -172,7 +182,9 @@ function refresh() {
     const allWeeks = [...new Set(rawPRData.map(d => d.week))].sort().reverse();
     const targetWeeks = allWeeks.slice(0, weeksCount);
 
+    document.getElementById('teamCount').innerText = `${activeTeams.length} Teams`;
     renderKPIs(teams, targetWeeks); 
+    renderTable(teams, targetWeeks); 
     updateCharts(teams, targetWeeks);
     updateHeaderLabel(weeksCount);
 }
@@ -218,6 +230,18 @@ function renderKPIs(teams, weeks) {
     });
 }
 
+function renderTable(teams, weeks) {
+    document.getElementById('tableHeader').innerHTML = `<th class="py-3">Team</th><th class="text-center">Triage</th><th class="text-center">Manual %</th><th class="text-center">Cycle (d)</th>`;
+    document.getElementById('teamTable').innerHTML = teams.map(t => {
+        const tr = rawTriageData.filter(d => d.team === t && weeks.includes(d.week)).map(d => d.hours);
+        const pr = rawPRData.filter(d => d.team === t && weeks.includes(d.week));
+        const tt = pr.reduce((a,b)=>a+b.total,0);
+        const manPct = tt > 0 ? (pr.reduce((a,b)=>a+b.manual,0)/tt)*100 : 0;
+        const cyc = (cycleMode === 'mean' ? getMean(pr.map(d=>d.cycle)) : getMedian(pr.map(d=>d.cycle))) / 24.0;
+        return `<tr class="border-b border-slate-800/50 hover:bg-slate-800/20"><td>${t}</td><td class="text-center">${getMean(tr).toFixed(1)}h</td><td class="text-center">${manPct.toFixed(1)}%</td><td class="text-center">${cyc.toFixed(1)}d</td></tr>`;
+    }).join('');
+}
+
 function updateCharts(teams, weeks) {
     const chrono = [...weeks].reverse();
     const tri = [], man = [], cyc = [];
@@ -230,10 +254,10 @@ function updateCharts(teams, weeks) {
         const cw = pr.map(d => d.cycle);
         cyc.push((cycleMode==='mean'?getMean(cw):getMedian(cw))/24.0);
     });
-    const cfg = (t, m) => ({ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'#1e293b'}}, y:{grid:{color:'#1e293b'}, min:0, max:m}}});
-    if (triageChart) triageChart.destroy(); triageChart = new Chart(document.getElementById('triageChart'), {type:'line', data:{labels:chrono, datasets:[{data:tri, borderColor:'#06b6d4'}]}, options:cfg('Hours', 100)});
-    if (manualChart) manualChart.destroy(); manualChart = new Chart(document.getElementById('manualChart'), {type:'line', data:{labels:chrono, datasets:[{data:man, borderColor:'#10b981'}]}, options:cfg('%', 100)});
-    if (cycleChart) cycleChart.destroy(); cycleChart = new Chart(document.getElementById('cycleChart'), {type:'line', data:{labels:chrono, datasets:[{data:cyc, borderColor:'#8b5cf6'}]}, options:cfg('Days', 5)});
+    const cfg = (t, m) => ({ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'#1e293b'}, ticks:{color:'#64748b'}}, y:{grid:{color:'#1e293b'}, ticks:{color:'#64748b'}, min:0, max:m}}});
+    if (triageChart) triageChart.destroy(); triageChart = new Chart(document.getElementById('triageChart'), {type:'line', data:{labels:chrono, datasets:[{data:tri, borderColor:'#06b6d4', tension:0.3}]}, options:cfg('Hours', 100)});
+    if (manualChart) manualChart.destroy(); manualChart = new Chart(document.getElementById('manualChart'), {type:'line', data:{labels:chrono, datasets:[{data:man, borderColor:'#10b981', tension:0.3}]}, options:cfg('%', 100)});
+    if (cycleChart) cycleChart.destroy(); cycleChart = new Chart(document.getElementById('cycleChart'), {type:'line', data:{labels:chrono, datasets:[{data:cyc, borderColor:'#8b5cf6', tension:0.3}]}, options:cfg('Days', 5)});
 }
 
 function updateHeaderLabel(weeks) {
@@ -242,9 +266,10 @@ function updateHeaderLabel(weeks) {
     document.getElementById('scopeBadge').innerText = `${gSel} · ${tSel} · ${weeks} Weeks`;
 }
 
+// UI HELPERS
 function initMultiSelect(btnId, dropdownId, optionsId, isGroup) {
   const btn = document.getElementById(btnId), dropdown = document.getElementById(dropdownId), optionsDiv = document.getElementById(optionsId);
-  btn.onclick = (e) => { e.stopPropagation(); dropdown.classList.toggle('show'); };
+  btn.onclick = (e) => { e.stopPropagation(); document.querySelectorAll('.dropdown-content').forEach(d => { if(d !== dropdown) d.classList.remove('show'); }); dropdown.classList.toggle('show'); };
   const items = isGroup ? Object.keys(groupsData) : allTeamsList;
   optionsDiv.innerHTML = items.map(item => `<label class="flex items-center gap-2 p-2 hover:bg-slate-700 rounded cursor-pointer text-sm"><input type="checkbox" value="${item}">${item}</label>`).join('');
   optionsDiv.querySelectorAll('input').forEach(input => {
@@ -287,6 +312,7 @@ function loadFiltersFromURL() {
 
 window.onclick = () => document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
 
+// INIT
 initMultiSelect('groupBtn', 'groupDropdown', 'groupOptions', true);
 initMultiSelect('teamBtn', 'teamDropdown', 'teamOptions', false);
 fetchCSVData();
