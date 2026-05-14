@@ -319,7 +319,7 @@ Week,Team,Tested by QA,Total PRs,Manual PR %,CycleTimeHours
 2026-W17,Templates,12,39,30.77,15.7
 2026-W17,Accelerator Platform 1,0,17,0.00,29.7
 2026-W17,Accelerator Platform 2,15,32,46.88,54.6
-2026-W18,DC1,35,35,100.00,81.2
+2026-W18,DC1,0,35,0.00,6
 2026-W18,DC2,6,31,19.35,23.5
 2026-W18,DC3,13,39,33.33,32.9
 2026-W18,AI1,15,38,39.47,35.9
@@ -351,7 +351,7 @@ Week,Team,Tested by QA,Total PRs,Manual PR %,CycleTimeHours
 2026-W18,Templates,3,13,23.08,78
 2026-W18,Accelerator Platform 1,9,38,23.68,78
 2026-W18,Accelerator Platform 2,9,28,32.14,78
-2026-W19,DC1,22,22,100.00,30
+2026-W19,DC1,0,22,0.00,6
 2026-W19,DC2,5.6,28,20.00,30
 2026-W19,DC3,3,18,16.67,30
 2026-W19,AI1,12,40,30.00,30
