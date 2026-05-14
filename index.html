@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-  body { font-family: 'Inter', sans-serif; }
+  body { font-family: 'Inter', sans-serif; background-color: #020617; }
   .progress-bar { transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
   .custom-scrollbar::-webkit-scrollbar { width: 4px; }
   .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
@@ -18,7 +18,7 @@
   .toggle-active { background: #06b6d4; color: white; }
 </style>
 </head>
-<body class="bg-slate-950 text-slate-200 min-h-screen">
+<body class="text-slate-200 min-h-screen">
 
 <div class="flex min-h-screen">
   <aside class="w-72 bg-slate-900 border-r border-slate-800 p-6 flex flex-col no-print z-50">
@@ -62,8 +62,9 @@
         </div>
       </div>
     </div>
+
     <div class="mt-auto pt-6 border-t border-slate-800">
-      <button id="exportPdfBtn" class="w-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-medium text-sm rounded-lg px-3 py-2.5">PDF Export</button>
+      <button id="exportPdfBtn" class="w-full bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-medium text-sm rounded-lg px-3 py-2.5 hover:opacity-90">PDF Export</button>
     </div>
   </aside>
 
@@ -109,6 +110,7 @@
 </div>
 
 <script>
+// --- CONFIG & STATE ---
 const groupsData = {
   "Data Consistency": ["DC1", "DC2", "DC3"], "AI": ["AI1", "AI2", "AI3", "AI4", "AI5", "AI6"], "Process": ["Process 1", "Process 2", "Process 3", "Enterprise Architecture"], "Project Spillover": ["Intelligent Feature Adoption", "License Request/Grants", "New Enterprise User"], "Growth": ["Growth"], "Planning": ["Planning 1", "Planning 2"], "Cloud": ["Cloud 1", "Cloud 2"], "Intelligent Interface": ["Intelligent Interface 1", "Intelligent Interface 2", "Intelligent Interface 3", "Intelligent Interface 4", "UFO"], "Core": ["Papercuts", "Core Support", "Change Management", "Templates"], "Accelerator Platform": ["Accelerator Platform 1", "Accelerator Platform 2"]
 };
@@ -131,33 +133,235 @@ const kpis = [
   { key: 'qaTools', name: 'QA Tools WAU', unit: '', goal: 24, type: 'higher', agg: 'avg' }
 ];
 
-const getMean = (arr) => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0;
+// --- MATH UTILS ---
+const getMean = (arr) => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0.0;
 const getMedian = (arr) => {
-  if (!arr.length) return 0;
+  if (!arr.length) return 0.0;
   const s = [...arr].sort((a,b)=>a-b);
   const mid = Math.floor(s.length/2);
-  return s.length % 2 !== 0 ? s[mid] : (s[mid-1]+s[mid])/2;
+  return s.length % 2 !== 0 ? s[mid] : (s[mid-1]+s[mid])/2.0;
 };
 
-function updateURL() {
-  const p = new URLSearchParams();
-  p.set('period', document.getElementById('periodSelect').value);
-  if (selectedGroups.length) p.set('groups', selectedGroups.join(','));
-  if (selectedTeams.length) p.set('teams', selectedTeams.join(','));
-  window.history.replaceState({}, '', `${window.location.pathname}?${p.toString()}`);
+// --- DATA FETCHING ---
+async function fetchCSVData() {
+    try {
+        const [resPR, resTr, resSh, resQA] = await Promise.all([
+            fetch('manual_prs.csv'), fetch('bug_triage.csv'), fetch('shift_left.csv'), fetch('qa_tools.csv')
+        ]);
+        if (resPR.ok) {
+            const r = (await resPR.text()).split('\n').filter(l => l.trim() !== '');
+            rawPRData = r.slice(1).map(l => { 
+                const c = l.split(',').map(v => v.trim()); 
+                return { 
+                    week: c[0], 
+                    team: c[1], 
+                    manual: parseInt(c[2])||0, 
+                    total: parseInt(c[3])||0, 
+                    cycle: parseFloat(c[4]) || 0.0 // Ensure this index is correct for your CSV!
+                }; 
+            });
+        }
+        if (resTr.ok) {
+            const r = (await resTr.text()).split('\n').filter(l => l.trim() !== '');
+            rawTriageData = r.slice(1).map(l => { 
+              const c = l.split(',').map(v => v.trim()); 
+              return { week: c[0], team: c[1], hours: parseFloat(c[2])||0.0 }; 
+            });
+        }
+        if (resSh.ok) {
+            const r = (await resSh.text()).split('\n').filter(l => l.trim() !== '');
+            rawShiftData = r.slice(1).map(l => { 
+              const c = l.split(',').map(v => v.trim()); 
+              const [m,d,y] = c[1].split('/'); 
+              return { date: new Date(y,m-1,d) }; 
+            });
+        }
+        if (resQA.ok) {
+            const r = (await resQA.text()).split('\n').filter(l => l.trim() !== '');
+            rawQAData = r.slice(1).map(l => { 
+              const c = l.split(',').map(v => v.trim()); 
+              return { week: c[0], visits: parseInt(c[1])||0 }; 
+            });
+        }
+        refresh();
+    } catch (e) { console.error("Error fetching data:", e); }
 }
 
-function loadFiltersFromURL() {
-  const p = new URLSearchParams(window.location.search);
-  const period = p.get('period'); if (period) document.getElementById('periodSelect').value = period;
-  const groups = p.get('groups'); if (groups) selectedGroups = groups.split(',');
-  const teams = p.get('teams'); if (teams) selectedTeams = teams.split(',');
-  document.querySelectorAll('#groupOptions input').forEach(i => { if (selectedGroups.includes(i.value)) i.checked = true; });
-  updateTeamOptions();
-  document.querySelectorAll('#teamOptions input').forEach(i => { if (selectedTeams.includes(i.value)) i.checked = true; });
-  updateButtonText();
+// --- LOGIC ---
+function refresh() {
+    const activeTeams = selectedTeams.length ? selectedTeams : (selectedGroups.length ? selectedGroups.flatMap(g => groupsData[g]) : allTeamsList);
+    const weeksCount = parseInt(document.getElementById('periodSelect').value);
+    
+    // Reset data mapping
+    allTeamsList.forEach(t => dashboardData[t] = { bugTriage: 0.0, manualPRs: 0.0, cycleTime: 0.0 });
+
+    const allWeeks = [...new Set(rawPRData.map(d => d.week))].sort().reverse();
+    const targetWeeks = allWeeks.slice(0, weeksCount);
+
+    activeTeams.forEach(team => {
+        const pr = rawPRData.filter(d => d.team === team && targetWeeks.includes(d.week));
+        if (pr.length > 0) { 
+            const tm = pr.reduce((s,r)=>s+r.manual,0); const tt = pr.reduce((s,r)=>s+r.total,0); 
+            dashboardData[team].manualPRs = tt > 0 ? (tm/tt)*100.0 : 0.0; 
+            const cyRaw = pr.map(r => r.cycle);
+            dashboardData[team].cycleTime = (cycleMode === 'mean' ? getMean(cyRaw) : getMedian(cyRaw)) / 24.0;
+        }
+        const tr = rawTriageData.filter(d => d.team === team && targetWeeks.includes(d.week));
+        if (tr.length > 0) dashboardData[team].bugTriage = tr.reduce((s,r)=>s+r.hours,0.0) / tr.length;
+    });
+
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - (weeksCount * 7));
+    const shiftVal = rawShiftData.filter(i => i.date >= cutoff).length;
+    const qaRows = rawQAData.filter(d => targetWeeks.includes(d.week));
+    const qaVal = qaRows.length ? (qaRows.reduce((s,i)=>s+i.visits, 0) / qaRows.length) : 0.0;
+
+    document.getElementById('teamCount').innerText = `${activeTeams.length} Teams`;
+    renderKPIs(activeTeams, (shiftVal>0?shiftVal-1:0), qaVal); 
+    renderTable(activeTeams); 
+    updateCharts(activeTeams, targetWeeks);
+    updateHeaderLabel(weeksCount);
 }
 
+function aggregate(teams, kpi) {
+  // POOLED DATA for Cycle Time to prevent "Average of Averages"
+  if (kpi.key === 'cycleTime') {
+    const weeksCount = parseInt(document.getElementById('periodSelect').value);
+    const allWeeks = [...new Set(rawPRData.map(d => d.week))].sort().reverse();
+    const targetWeeks = allWeeks.slice(0, weeksCount);
+
+    const pooledCycleHours = rawPRData
+      .filter(d => teams.includes(d.team) && targetWeeks.includes(d.week))
+      .map(d => d.cycle);
+
+    if (pooledCycleHours.length === 0) return 0.0;
+    const resultHours = (cycleMode === 'mean') ? getMean(pooledCycleHours) : getMedian(pooledCycleHours);
+    return resultHours / 24.0;
+  }
+
+  const sum = teams.reduce((acc, t) => acc + (dashboardData[t] ? parseFloat(dashboardData[t][kpi.key]) : 0.0), 0.0);
+  return kpi.agg === 'sum' ? sum : (teams.length ? sum / teams.length : 0.0);
+}
+
+// --- UI RENDERING ---
+function formatValue(kpi, value) {
+  const num = parseFloat(value);
+  if (kpi.unit === 'd') return num.toFixed(1) + 'd';
+  if (Number.isInteger(num)) return num + kpi.unit;
+  return num.toFixed(1) + kpi.unit;
+}
+
+function renderKPIs(teams, shiftVal, qaVal) {
+  const isFiltered = selectedTeams.length > 0 || selectedGroups.length > 0;
+  const grid = document.getElementById('kpiGrid'); 
+  grid.innerHTML = '';
+  
+  kpis.forEach(kpi => {
+    if (isFiltered && (kpi.key === 'shiftLeft' || kpi.key === 'qaTools')) return;
+    
+    const val = kpi.key === 'shiftLeft' ? shiftVal : (kpi.key === 'qaTools' ? qaVal : aggregate(teams, kpi));
+    const status = (kpi.type === 'lower') ? (val <= kpi.goal ? 'on' : 'risk') : (val >= kpi.goal ? 'on' : 'risk');
+    const onTrack = status === 'on';
+    
+    // Calculate progress %
+    let pct = 0;
+    if (kpi.type === 'lower') pct = val === 0 ? 100 : Math.max(0, Math.min(100, (kpi.goal / val) * 100));
+    else pct = Math.max(0, Math.min(100, (val / kpi.goal) * 100));
+
+    const hasBar = ['bugTriage', 'manualPRs', 'cycleTime'].includes(kpi.key);
+
+    grid.innerHTML += `
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 transition-all hover:border-slate-700">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <p class="text-xs font-semibold uppercase text-slate-500">${kpi.name}</p>
+            ${kpi.key === 'cycleTime' ? `
+              <div class="flex bg-slate-800 rounded-lg p-0.5 mt-2 no-print">
+                <button onclick="cycleMode='mean';refresh();" class="px-2 py-0.5 text-[10px] rounded-md ${cycleMode==='mean'?'toggle-active':'text-slate-500'}">Mean</button>
+                <button onclick="cycleMode='median';refresh();" class="px-2 py-0.5 text-[10px] rounded-md ${cycleMode==='median'?'toggle-active':'text-slate-500'}">Med</button>
+              </div>` : ''}
+          </div>
+          <span class="inline-flex px-2 py-1 rounded-full ${onTrack ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'} text-xs border border-current/20">${onTrack ? 'On Track' : 'At Risk'}</span>
+        </div>
+        <p class="text-4xl font-bold text-white ${hasBar ? 'mb-4' : ''}">${formatValue(kpi, val)}</p>
+        ${hasBar ? `
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div class="progress-bar h-full ${onTrack?'bg-cyan-500':'bg-amber-500'} rounded-full" style="width:${pct}%"></div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">${pct.toFixed(0)}% of target</p>` 
+        : `<p class="text-xs text-slate-500 mt-2">Goal: ${kpi.goal}${kpi.unit}</p>`}
+      </div>`;
+  });
+}
+
+function renderTable(teams) {
+  const isFiltered = selectedTeams.length > 0 || selectedGroups.length > 0;
+  const header = document.getElementById('tableHeader');
+  header.innerHTML = `
+    <th class="py-3 px-2">Team</th>
+    <th class="py-3 px-2 text-center">Bug Triage</th>
+    <th class="py-3 px-2 text-center">Manual PRs</th>
+    <th class="py-3 px-2 text-center">Cycle Time</th>
+    ${!isFiltered?'<th class="py-3 px-2 text-center">Shift Left</th><th class="py-3 px-2 text-center">QA Tools</th>':''}`;
+  
+  const tbody = document.getElementById('teamTable');
+  tbody.innerHTML = teams.map(t => {
+    const d = dashboardData[t];
+    const getStatus = (k, v) => (k.type === 'lower' ? (v <= k.goal ? 'text-emerald-400' : 'text-amber-400') : (v >= k.goal ? 'text-emerald-400' : 'text-amber-400'));
+    
+    return `
+      <tr class="border-b border-slate-800/50 hover:bg-slate-800/30">
+        <td class="py-3 px-2 text-white font-medium">${t}</td>
+        <td class="py-3 px-2 text-center ${getStatus(kpis[0], d.bugTriage)}">${formatValue(kpis[0], d.bugTriage)}</td>
+        <td class="py-3 px-2 text-center ${getStatus(kpis[1], d.manualPRs)}">${formatValue(kpis[1], d.manualPRs)}</td>
+        <td class="py-3 px-2 text-center ${getStatus(kpis[2], d.cycleTime)}">${formatValue(kpis[2], d.cycleTime)}</td>
+        ${!isFiltered?'<td class="text-center text-slate-600">--</td><td class="text-center text-slate-600">--</td>':''}
+      </tr>`;
+  }).join('');
+}
+
+function updateCharts(activeTeams, targetWeeks) {
+    const chrono = [...targetWeeks].reverse();
+    const tri = [], man = [], cyc = [];
+    chrono.forEach(w => {
+        const tRows = rawTriageData.filter(d => activeTeams.includes(d.team) && d.week === w);
+        tri.push(tRows.length ? getMean(tRows.map(d=>d.hours)) : null);
+        const pRows = rawPRData.filter(d => activeTeams.includes(d.team) && d.week === w);
+        const tm = pRows.reduce((s,r)=>s+r.manual,0), tt = pRows.reduce((s,r)=>s+r.total,0);
+        man.push(tt > 0 ? (tm/tt)*100.0 : null);
+        const cVal = pRows.map(r => r.cycle);
+        cyc.push(cVal.length ? (cycleMode === 'mean' ? getMean(cVal) : getMedian(cVal))/24.0 : null);
+    });
+    
+    const cfg = (title, max) => ({
+      responsive: true, maintainAspectRatio: false, 
+      plugins: { legend: { display: false } },
+      scales: { 
+        x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }, 
+        y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' }, title: { display: true, text: title, color: '#64748b' }, min: 0, max: max } 
+      }
+    });
+
+    if (triageChart) triageChart.destroy();
+    triageChart = new Chart(document.getElementById('triageChart'), { 
+      type: 'line', data: { labels: chrono, datasets: [{ data: tri, borderColor: '#06b6d4', borderWidth: 2, tension: 0.3 }] }, options: cfg('Hours', 100) 
+    });
+    if (manualChart) manualChart.destroy();
+    manualChart = new Chart(document.getElementById('manualChart'), { 
+      type: 'line', data: { labels: chrono, datasets: [{ data: man, borderColor: '#10b981', borderWidth: 2, tension: 0.3 }] }, options: cfg('%', 100) 
+    });
+    if (cycleChart) cycleChart.destroy();
+    cycleChart = new Chart(document.getElementById('cycleChart'), { 
+      type: 'line', data: { labels: chrono, datasets: [{ data: cyc, borderColor: '#8b5cf6', borderWidth: 2, tension: 0.3 }] }, options: cfg('Days', 5) 
+    });
+}
+
+function updateHeaderLabel(weeks) {
+    const gSel = selectedGroups.length <= 3 ? selectedGroups.join(', ') : `${selectedGroups.slice(0,2).join(', ')} + ${selectedGroups.length-2} more`;
+    const tSel = selectedTeams.length <= 3 ? selectedTeams.join(', ') : `${selectedTeams.slice(0,2).join(', ')} + ${selectedTeams.length-2} more`;
+    document.getElementById('scopeBadge').innerText = `${selectedGroups.length ? gSel : "All Groups"} · ${selectedTeams.length ? tSel : "All Teams"} · ${weeks} Weeks`;
+}
+
+// --- INTERACTION ---
 function initMultiSelect(btnId, dropdownId, optionsId, isGroup = true) {
   const btn = document.getElementById(btnId);
   const dropdown = document.getElementById(dropdownId);
@@ -192,147 +396,15 @@ function updateButtonText() {
 
 window.onclick = () => document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
 
-async function fetchCSVData() {
-    try {
-        const [resPR, resTr, resSh, resQA] = await Promise.all([
-            fetch('manual_prs.csv'), fetch('bug_triage.csv'), fetch('shift_left.csv'), fetch('qa_tools.csv')
-        ]);
-        if (resPR.ok) {
-            const r = (await resPR.text()).split('\n').filter(l => l.trim() !== '');
-            rawPRData = r.slice(1).map(l => { 
-                const c = l.split(',').map(v => v.trim()); 
-                return { week: c[0], team: c[1], manual: parseInt(c[2])||0, total: parseInt(c[3])||0, cycle: parseFloat(c[4])||0.0 }; 
-            });
-        }
-        if (resTr.ok) {
-            const r = (await resTr.text()).split('\n').filter(l => l.trim() !== '');
-            rawTriageData = r.slice(1).map(l => { const c = l.split(',').map(v => v.trim()); return { week: c[0], team: c[1], hours: parseFloat(c[2])||0.0 }; });
-        }
-        if (resSh.ok) {
-            const r = (await resSh.text()).split('\n').filter(l => l.trim() !== '');
-            rawShiftData = r.slice(1).map(l => { const c = l.split(',').map(v => v.trim()); const [m,d,y] = c[1].split('/'); return { date: new Date(y,m-1,d) }; });
-        }
-        if (resQA.ok) {
-            const r = (await resQA.text()).split('\n').filter(l => l.trim() !== '');
-            rawQAData = r.slice(1).map(l => { const c = l.split(',').map(v => v.trim()); return { week: c[0], visits: parseInt(c[1])||0 }; });
-        }
-        refresh();
-    } catch (e) { console.error(e); }
+function updateURL() {
+  const p = new URLSearchParams();
+  p.set('period', document.getElementById('periodSelect').value);
+  if (selectedGroups.length) p.set('groups', selectedGroups.join(','));
+  if (selectedTeams.length) p.set('teams', selectedTeams.join(','));
+  window.history.replaceState({}, '', `${window.location.pathname}?${p.toString()}`);
 }
 
-function refresh() {
-    const activeTeams = selectedTeams.length ? selectedTeams : (selectedGroups.length ? selectedGroups.flatMap(g => groupsData[g]) : allTeamsList);
-    const weeksCount = parseInt(document.getElementById('periodSelect').value);
-    allTeamsList.forEach(t => dashboardData[t] = { bugTriage: 0.0, manualPRs: 0.0, cycleTime: 0.0 });
-
-    const allWeeks = [...new Set(rawPRData.map(d => d.week))].sort().reverse();
-    const targetWeeks = allWeeks.slice(0, weeksCount);
-
-    activeTeams.forEach(team => {
-        const pr = rawPRData.filter(d => d.team === team && targetWeeks.includes(d.week));
-        if (pr.length > 0) { 
-            const tm = pr.reduce((s,r)=>s+r.manual,0); const tt = pr.reduce((s,r)=>s+r.total,0); 
-            dashboardData[team].manualPRs = tt > 0 ? (tm/tt)*100.0 : 0.0; 
-            const cyRaw = pr.map(r => r.cycle);
-            dashboardData[team].cycleTime = (cycleMode === 'mean' ? getMean(cyRaw) : getMedian(cyRaw)) / 24.0;
-        }
-        const tr = rawTriageData.filter(d => d.team === team && targetWeeks.includes(d.week));
-        if (tr.length > 0) dashboardData[team].bugTriage = tr.reduce((s,r)=>s+r.hours,0.0) / tr.length;
-    });
-
-    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - (weeksCount * 7));
-    const shiftVal = rawShiftData.filter(i => i.date >= cutoff).length;
-    const qaRows = rawQAData.filter(d => targetWeeks.includes(d.week));
-    const qaVal = qaRows.length ? (qaRows.reduce((s,i)=>s+i.visits, 0) / qaRows.length) : 0.0;
-
-    document.getElementById('teamCount').innerText = `${activeTeams.length} Teams`;
-    renderKPIs(activeTeams, (shiftVal>0?shiftVal-1:0), qaVal); 
-    renderTable(activeTeams); 
-    updateCharts(activeTeams, targetWeeks);
-}
-
-function aggregate(teams, kpi) {
-  // CRITICAL FIX: Cycle Time uses RAW POOLED PRs instead of "Average of Averages"
-  if (kpi.key === 'cycleTime') {
-    const weeksCount = parseInt(document.getElementById('periodSelect').value);
-    const allWeeks = [...new Set(rawPRData.map(d => d.week))].sort().reverse();
-    const targetWeeks = allWeeks.slice(0, weeksCount);
-
-    const pooledCycleHours = rawPRData
-      .filter(d => teams.includes(d.team) && targetWeeks.includes(d.week))
-      .map(d => d.cycle);
-
-    if (pooledCycleHours.length === 0) return 0.0;
-    const resultHours = (cycleMode === 'mean') ? getMean(pooledCycleHours) : getMedian(pooledCycleHours);
-    return resultHours / 24.0;
-  }
-
-  const sum = teams.reduce((acc, t) => acc + (dashboardData[t] ? parseFloat(dashboardData[t][kpi.key]) : 0.0), 0.0);
-  return kpi.agg === 'sum' ? sum : (teams.length ? sum / teams.length : 0.0);
-}
-
-function statusFor(kpi, value) { return kpi.type === 'lower' ? (value <= kpi.goal ? 'on' : 'risk') : (value >= kpi.goal ? 'on' : 'risk'); }
-function progressPct(kpi, value) { if (kpi.type === 'lower') return value === 0 ? 100 : Math.max(0, Math.min(100, (kpi.goal / value) * 100)); return Math.max(0, Math.min(100, (value / kpi.goal) * 100)); }
-
-function formatValue(kpi, value) {
-  const num = parseFloat(value);
-  if (kpi.unit === 'd') return num.toFixed(1) + 'd';
-  return (Number.isInteger(num) ? num : num.toFixed(1)) + kpi.unit;
-}
-
-function renderKPIs(teams, shiftVal, qaVal) {
-  const isFiltered = selectedTeams.length > 0 || selectedGroups.length > 0;
-  const grid = document.getElementById('kpiGrid'); grid.innerHTML = '';
-  kpis.forEach(kpi => {
-    if (isFiltered && (kpi.key === 'shiftLeft' || kpi.key === 'qaTools')) return;
-    const val = kpi.key === 'shiftLeft' ? shiftVal : (kpi.key === 'qaTools' ? qaVal : aggregate(teams, kpi));
-    const onTrack = statusFor(kpi, val) === 'on';
-    const pct = progressPct(kpi, val);
-    const hasBar = ['bugTriage', 'manualPRs', 'cycleTime'].includes(kpi.key);
-
-    grid.innerHTML += `
-      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 transition-all hover:border-slate-700">
-        <div class="flex justify-between items-start mb-4">
-          <div>
-            <p class="text-xs font-semibold uppercase text-slate-500">${kpi.name}</p>
-            ${kpi.key === 'cycleTime' ? `<div class="flex bg-slate-800 rounded-lg p-0.5 mt-2 no-print"><button onclick="cycleMode='mean';refresh();" class="px-2 py-0.5 text-[10px] rounded-md ${cycleMode==='mean'?'toggle-active':'text-slate-500'}">Mean</button><button onclick="cycleMode='median';refresh();" class="px-2 py-0.5 text-[10px] rounded-md ${cycleMode==='median'?'toggle-active':'text-slate-500'}">Med</button></div>` : ''}
-          </div>
-          <span class="inline-flex px-2 py-1 rounded-full ${onTrack ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'} text-xs border border-current/20">${onTrack ? 'On Track' : 'At Risk'}</span>
-        </div>
-        <p class="text-4xl font-bold text-white ${hasBar ? 'mb-4' : ''}">${formatValue(kpi, val)}</p>
-        ${hasBar ? `<div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden"><div class="progress-bar h-full ${onTrack?'bg-cyan-500':'bg-amber-500'} rounded-full" style="width:${pct}%"></div></div><p class="text-xs text-slate-500 mt-2">${pct.toFixed(0)}% of target</p>` : `<p class="text-xs text-slate-500 mt-2">Goal: ${kpi.goal}${kpi.unit}</p>`}
-      </div>`;
-  });
-}
-
-function renderTable(teams) {
-  const isFiltered = selectedTeams.length > 0 || selectedGroups.length > 0;
-  document.getElementById('tableHeader').innerHTML = `<th class="py-3 px-2">Team</th><th class="py-3 px-2 text-center">Bug Triage</th><th class="py-3 px-2 text-center">Manual PRs</th><th class="py-3 px-2 text-center">Cycle Time</th>${!isFiltered?'<th class="py-3 px-2 text-center">Shift Left</th><th class="py-3 px-2 text-center">QA Tools</th>':''}`;
-  document.getElementById('teamTable').innerHTML = teams.map(t => {
-    const d = dashboardData[t];
-    const cell = (kpi, v) => `<td class="py-3 px-2 ${statusFor(kpi, v)==='on'?'text-emerald-400':'text-amber-400'} text-center font-medium">${formatValue(kpi, v)}</td>`;
-    return `<tr class="border-b border-slate-800/50 hover:bg-slate-800/30"><td class="py-3 px-2 text-white font-medium">${t}</td>${cell(kpis[0],d.bugTriage)}${cell(kpis[1],d.manualPRs)}${cell(kpis[2],d.cycleTime)}${!isFiltered?'<td class="text-center text-slate-600">--</td><td class="text-center text-slate-600">--</td>':''}</tr>`;
-  }).join('');
-}
-
-function updateCharts(activeTeams, targetWeeks) {
-    const chrono = [...targetWeeks].reverse();
-    const tri = [], man = [], cyc = [];
-    chrono.forEach(w => {
-        const tRows = rawTriageData.filter(d => activeTeams.includes(d.team) && d.week === w);
-        tri.push(tRows.length ? getMean(tRows.map(d=>d.hours)) : null);
-        const pRows = rawPRData.filter(d => activeTeams.includes(d.team) && d.week === w);
-        const tm = pRows.reduce((s,r)=>s+r.manual,0), tt = pRows.reduce((s,r)=>s+r.total,0);
-        man.push(tt > 0 ? (tm/tt)*100.0 : null);
-        const cVal = pRows.map(r => r.cycle);
-        cyc.push(cVal.length ? (cycleMode === 'mean' ? getMean(cVal) : getMedian(cVal))/24.0 : null);
-    });
-    const cfg = (title, max) => ({ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }, y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' }, title: { display: true, text: title, color: '#64748b' }, min: 0, max: max } } });
-    if (triageChart) triageChart.destroy(); triageChart = new Chart(document.getElementById('triageChart'), { type: 'line', data: { labels: chrono, datasets: [{ data: tri, borderColor: '#06b6d4', borderWidth: 2, tension: 0.3 }] }, options: cfg('Hours', 100) });
-    if (manualChart) manualChart.destroy(); manualChart = new Chart(document.getElementById('manualChart'), { type: 'line', data: { labels: chrono, datasets: [{ data: man, borderColor: '#10b981', borderWidth: 2, tension: 0.3 }] }, options: cfg('%', 100) });
-    if (cycleChart) cycleChart.destroy(); cycleChart = new Chart(document.getElementById('cycleChart'), { type: 'line', data: { labels: chrono, datasets: [{ data: cyc, borderColor: '#8b5cf6', borderWidth: 2, tension: 0.3 }] }, options: cfg('Days', 5) });
-}
-
+// --- INIT ---
 initMultiSelect('groupBtn', 'groupDropdown', 'groupOptions', true);
 initMultiSelect('teamBtn', 'teamDropdown', 'teamOptions', false);
 document.getElementById('periodSelect').onchange = () => { updateURL(); fetchCSVData(); };
