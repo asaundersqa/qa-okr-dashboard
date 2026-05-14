@@ -39,7 +39,7 @@
 
       <div class="relative">
         <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Groups</label>
-        <button id="groupBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center hover:border-slate-600 transition-colors">
+        <button id="groupBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center">
           <span id="groupBtnText">All Groups</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
         </button>
@@ -50,7 +50,7 @@
 
       <div class="relative">
         <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Teams</label>
-        <button id="teamBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center hover:border-slate-600 transition-colors">
+        <button id="teamBtn" class="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-3 py-2.5 text-sm text-left flex justify-between items-center">
           <span id="teamBtnText">All Teams</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
         </button>
@@ -106,7 +106,6 @@
 </div>
 
 <script>
-// --- CONFIG ---
 const groupsData = {
   "Data Consistency": ["DC1", "DC2", "DC3"], "AI": ["AI1", "AI2", "AI3", "AI4", "AI5", "AI6"], "Process": ["Process 1", "Process 2", "Process 3", "Enterprise Architecture"], "Project Spillover": ["Intelligent Feature Adoption", "License Request/Grants", "New Enterprise User"], "Growth": ["Growth"], "Planning": ["Planning 1", "Planning 2"], "Cloud": ["Cloud 1", "Cloud 2"], "Intelligent Interface": ["Intelligent Interface 1", "Intelligent Interface 2", "Intelligent Interface 3", "Intelligent Interface 4", "UFO"], "Core": ["Papercuts", "Core Support", "Change Management", "Templates"], "Accelerator Platform": ["Accelerator Platform 1", "Accelerator Platform 2"]
 };
@@ -114,7 +113,7 @@ const groupsData = {
 let rawPRData = [], rawTriageData = [], rawShiftData = [], rawQAData = [];
 let selectedGroups = [], selectedTeams = [];
 let cycleMode = 'mean'; 
-let triageChart = null, manualChart = null, cycleChart = null;
+let triageChart, manualChart, cycleChart;
 
 const allTeamsList = Object.values(groupsData).flat();
 const kpis = [
@@ -133,7 +132,6 @@ const getMedian = (arr) => {
   return s.length % 2 !== 0 ? s[mid] : (s[mid-1]+s[mid])/2.0;
 };
 
-// --- DATA FETCHING ---
 async function fetchCSVData() {
     try {
         const bust = new Date().getTime();
@@ -150,48 +148,45 @@ async function fetchCSVData() {
                 return { week: c[0], team: c[1], manual: parseFloat(c[2])||0, total: parseFloat(c[3])||0, cycle: parseFloat(c[5])||0 }; 
             });
         }
-        if (resT.ok) {
+        if(resT.ok) {
             const r = (await resT.text()).split('\n').filter(l => l.trim().length > 5);
             rawTriageData = r.slice(1).map(l => { const c = l.split(','); return { week: c[0], team: c[1], hours: parseFloat(c[2])||0 }; });
         }
-        if (resS.ok) {
+        if(resS.ok) {
             const r = (await resS.text()).split('\n').filter(l => l.trim().length > 5);
             rawShiftData = r.slice(1).map(l => { const c = l.split(','); const p = c[1].split('/'); return { date: new Date(p[2], p[0]-1, p[1]) }; });
         }
-        if (resQ.ok) {
+        if(resQ.ok) {
             const r = (await resQ.text()).split('\n').filter(l => l.trim().length > 5);
             rawQAData = r.slice(1).map(l => { const c = l.split(','); return { week: c[0], visits: parseFloat(c[1])||0 }; });
         }
-
         loadFiltersFromURL();
         refresh();
-    } catch (e) { console.error("Refresh Error:", e); }
+    } catch (e) { console.error("Error fetching data:", e); }
 }
 
 function refresh() {
-    // Safety check: ensure raw data exists
-    if (!rawPRData.length) return;
-
     const currentTeams = selectedTeams.length ? selectedTeams : (selectedGroups.length ? selectedGroups.flatMap(g => groupsData[g]) : allTeamsList);
     const weeksCount = parseInt(document.getElementById('periodSelect').value);
     const allWeeks = [...new Set(rawPRData.map(d => d.week))].sort().reverse();
     const targetWeeks = allWeeks.slice(0, weeksCount);
 
     document.getElementById('teamCount').innerText = `${currentTeams.length} Teams`;
-    
     renderKPIs(currentTeams, targetWeeks); 
     renderTable(currentTeams, targetWeeks); 
     updateCharts(currentTeams, targetWeeks);
     updateHeaderLabel(weeksCount);
 }
 
-// --- RENDERING ---
 function renderKPIs(teams, weeks) {
-    const grid = document.getElementById('kpiGrid');
-    if (!grid) return;
+    const isFiltered = selectedTeams.length > 0 || selectedGroups.length > 0;
+    const grid = document.getElementById('kpiGrid'); 
     grid.innerHTML = '';
     
     kpis.forEach(kpi => {
+        // HIDE Shift Left and QA Tools if filtered
+        if (isFiltered && (kpi.key === 'shiftLeft' || kpi.key === 'qaTools')) return;
+
         let val = 0;
         if (kpi.key === 'cycleTime') {
             const pooled = rawPRData.filter(d => teams.includes(d.team) && weeks.includes(d.week)).map(d => d.cycle);
@@ -231,18 +226,15 @@ function renderKPIs(teams, weeks) {
 }
 
 function renderTable(teams, weeks) {
-    const tableHeader = document.getElementById('tableHeader');
-    const teamTable = document.getElementById('teamTable');
-    if (!tableHeader || !teamTable) return;
-
-    tableHeader.innerHTML = `<th class="py-3">Team</th><th class="text-center">Triage</th><th class="text-center">Manual %</th><th class="text-center">Cycle (d)</th>`;
-    teamTable.innerHTML = teams.map(t => {
+    const isFiltered = selectedTeams.length > 0 || selectedGroups.length > 0;
+    document.getElementById('tableHeader').innerHTML = `<th class="py-3">Team</th><th class="text-center">Triage</th><th class="text-center">Manual %</th><th class="text-center">Cycle (d)</th>`;
+    document.getElementById('teamTable').innerHTML = teams.map(t => {
         const tr = rawTriageData.filter(d => d.team === t && weeks.includes(d.week)).map(d => d.hours);
         const pr = rawPRData.filter(d => d.team === t && weeks.includes(d.week));
         const tt = pr.reduce((a,b)=>a+b.total,0);
         const manPct = tt > 0 ? (pr.reduce((a,b)=>a+b.manual,0)/tt)*100 : 0;
         const cyc = (cycleMode === 'mean' ? getMean(pr.map(d=>d.cycle)) : getMedian(pr.map(d=>d.cycle))) / 24.0;
-        return `<tr class="border-b border-slate-800/50"><td>${t}</td><td class="text-center">${getMean(tr).toFixed(1)}h</td><td class="text-center">${manPct.toFixed(1)}%</td><td class="text-center">${cyc.toFixed(1)}d</td></tr>`;
+        return `<tr class="border-b border-slate-800/50 hover:bg-slate-800/20"><td>${t}</td><td class="text-center">${getMean(tr).toFixed(1)}h</td><td class="text-center">${manPct.toFixed(1)}%</td><td class="text-center">${cyc.toFixed(1)}d</td></tr>`;
     }).join('');
 }
 
@@ -258,59 +250,44 @@ function updateCharts(teams, weeks) {
         const cw = pr.map(d => d.cycle);
         cyc.push((cycleMode==='mean'?getMean(cw):getMedian(cw))/24.0);
     });
-    
-    const cfg = (t, m) => ({ 
-      responsive:true, 
-      maintainAspectRatio:false, 
-      plugins:{legend:{display:false}}, 
-      scales:{x:{grid:{color:'#1e293b'}, ticks:{color:'#64748b'}}, y:{grid:{color:'#1e293b'}, ticks:{color:'#64748b'}, min:0, max:m}}
-    });
-
-    if (triageChart) triageChart.destroy();
-    const ctxT = document.getElementById('triageChart');
-    if (ctxT) triageChart = new Chart(ctxT, {type:'line', data:{labels:chrono, datasets:[{data:tri, borderColor:'#06b6d4', tension:0.3}]}, options:cfg('Hours', 100)});
-    
-    if (manualChart) manualChart.destroy();
-    const ctxM = document.getElementById('manualChart');
-    if (ctxM) manualChart = new Chart(ctxM, {type:'line', data:{labels:chrono, datasets:[{data:man, borderColor:'#10b981', tension:0.3}]}, options:cfg('%', 100)});
-    
-    if (cycleChart) cycleChart.destroy();
-    const ctxC = document.getElementById('cycleChart');
-    if (ctxC) cycleChart = new Chart(ctxC, {type:'line', data:{labels:chrono, datasets:[{data:cyc, borderColor:'#8b5cf6', tension:0.3}]}, options:cfg('Days', 5)});
+    const cfg = (t, m) => ({ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'#1e293b'}, ticks:{color:'#64748b'}}, y:{grid:{color:'#1e293b'}, ticks:{color:'#64748b'}, min:0, max:m}}});
+    if (triageChart) triageChart.destroy(); triageChart = new Chart(document.getElementById('triageChart'), {type:'line', data:{labels:chrono, datasets:[{data:tri, borderColor:'#06b6d4', tension:0.3}]}, options:cfg('Hours', 100)});
+    if (manualChart) manualChart.destroy(); manualChart = new Chart(document.getElementById('manualChart'), {type:'line', data:{labels:chrono, datasets:[{data:man, borderColor:'#10b981', tension:0.3}]}, options:cfg('%', 100)});
+    if (cycleChart) cycleChart.destroy(); cycleChart = new Chart(document.getElementById('cycleChart'), {type:'line', data:{labels:chrono, datasets:[{data:cyc, borderColor:'#8b5cf6', tension:0.3}]}, options:cfg('Days', 5)});
 }
 
 function updateHeaderLabel(weeks) {
-    const gSel = selectedGroups.length ? selectedGroups.join(', ') : "All Groups";
-    const tSel = selectedTeams.length ? selectedTeams.join(', ') : "All Teams";
-    const scopeBadge = document.getElementById('scopeBadge');
-    if (scopeBadge) scopeBadge.innerText = `${gSel} · ${tSel} · ${weeks} Weeks`;
+    const gSel = selectedGroups.length ? (selectedGroups.length === 1 ? selectedGroups[0] : `${selectedGroups.length} Groups`) : "All Groups";
+    const tSel = selectedTeams.length ? (selectedTeams.length === 1 ? selectedTeams[0] : `${selectedTeams.length} Teams`) : "All Teams";
+    document.getElementById('scopeBadge').innerText = `${gSel} · ${tSel} · ${weeks} Weeks`;
 }
 
-// --- UI HELPERS ---
 function initMultiSelect(btnId, dropdownId, optionsId, isGroup) {
   const btn = document.getElementById(btnId), dropdown = document.getElementById(dropdownId), optionsDiv = document.getElementById(optionsId);
-  if (!btn || !dropdown || !optionsDiv) return;
-
   btn.onclick = (e) => { e.stopPropagation(); document.querySelectorAll('.dropdown-content').forEach(d => { if(d !== dropdown) d.classList.remove('show'); }); dropdown.classList.toggle('show'); };
-  
   const items = isGroup ? Object.keys(groupsData) : allTeamsList;
   optionsDiv.innerHTML = items.map(item => `<label class="flex items-center gap-2 p-2 hover:bg-slate-700 rounded cursor-pointer text-sm"><input type="checkbox" value="${item}">${item}</label>`).join('');
-  
   optionsDiv.querySelectorAll('input').forEach(input => {
     input.onchange = () => {
       if (isGroup) { selectedGroups = Array.from(optionsDiv.querySelectorAll('input:checked')).map(i => i.value); updateTeamOptions(); }
       else { selectedTeams = Array.from(optionsDiv.querySelectorAll('input:checked')).map(i => i.value); }
-      updateURL(); refresh();
+      updateButtonText(); updateURL(); refresh();
     };
   });
 }
 
 function updateTeamOptions() {
   const div = document.getElementById('teamOptions');
-  if (!div) return;
   const teams = selectedGroups.length === 0 ? allTeamsList : selectedGroups.flatMap(g => groupsData[g]);
   div.innerHTML = teams.map(t => `<label class="flex items-center gap-2 p-2 hover:bg-slate-700 rounded cursor-pointer text-sm"><input type="checkbox" value="${t}" ${selectedTeams.includes(t) ? 'checked' : ''}>${t}</label>`).join('');
-  div.querySelectorAll('input').forEach(input => { input.onchange = () => { selectedTeams = Array.from(div.querySelectorAll('input:checked')).map(i => i.value); updateURL(); refresh(); }; });
+  div.querySelectorAll('input').forEach(input => { input.onchange = () => { selectedTeams = Array.from(div.querySelectorAll('input:checked')).map(i => i.value); updateButtonText(); updateURL(); refresh(); }; });
+}
+
+function updateButtonText() {
+  const gText = selectedGroups.length ? (selectedGroups.length === 1 ? selectedGroups[0] : `${selectedGroups.length} Selected`) : "All Groups";
+  const tText = selectedTeams.length ? (selectedTeams.length === 1 ? selectedTeams[0] : `${selectedTeams.length} Selected`) : "All Teams";
+  document.getElementById('groupBtnText').innerText = gText;
+  document.getElementById('teamBtnText').innerText = tText;
 }
 
 function updateURL() {
@@ -323,9 +300,7 @@ function updateURL() {
 
 function loadFiltersFromURL() {
     const p = new URLSearchParams(window.location.search);
-    const periodSel = document.getElementById('periodSelect');
-    if (periodSel && p.get('period')) periodSel.value = p.get('period');
-    
+    if (p.get('period')) document.getElementById('periodSelect').value = p.get('period');
     if (p.get('groups')) {
         selectedGroups = p.get('groups').split(',');
         document.querySelectorAll('#groupOptions input').forEach(i => { if (selectedGroups.includes(i.value)) i.checked = true; });
@@ -335,21 +310,15 @@ function loadFiltersFromURL() {
         selectedTeams = p.get('teams').split(',');
         document.querySelectorAll('#teamOptions input').forEach(i => { if (selectedTeams.includes(i.value)) i.checked = true; });
     }
-    
-    const gBtn = document.getElementById('groupBtnText');
-    const tBtn = document.getElementById('teamBtnText');
-    if (gBtn) gBtn.innerText = selectedGroups.length ? `${selectedGroups.length} Groups` : "All Groups";
-    if (tBtn) tBtn.innerText = selectedTeams.length ? `${selectedTeams.length} Teams` : "All Teams";
+    updateButtonText();
 }
 
 window.onclick = () => document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
 
-// --- START ---
 initMultiSelect('groupBtn', 'groupDropdown', 'groupOptions', true);
 initMultiSelect('teamBtn', 'teamDropdown', 'teamOptions', false);
 fetchCSVData();
-const pSel = document.getElementById('periodSelect');
-if (pSel) pSel.onchange = () => { updateURL(); refresh(); };
+document.getElementById('periodSelect').onchange = () => { updateURL(); refresh(); };
 </script>
 </body>
 </html>
