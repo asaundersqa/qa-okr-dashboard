@@ -146,7 +146,7 @@ async function fetchCSVData() {
             const r = (await resPR.text()).split('\n').filter(l => l.trim().length > 5);
             rawPRData = r.slice(1).map(l => { 
                 const c = l.split(',').map(v => v.trim()); 
-                return { week: c[0], team: c[1], manual: parseFloat(c[2])||0, total: parseFloat(c[3])||0, cycle: parseFloat(c[4])||0 }; 
+                return { week: c[0], team: c[1], manual: parseFloat(c[2])||0, total: parseFloat(c[3])||0, cycle: parseFloat(c[5])||0 }; 
             });
             console.log("DEBUG: First row cycle hours:", rawPRData[0].cycle);
         }
